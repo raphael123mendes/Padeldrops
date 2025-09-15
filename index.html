@@ -9,6 +9,15 @@
         const SUPABASE_URL = 'https://spekrchuvminnlxymxsp.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNwZWtyY2h1dm1pbm5seHlteHNwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc5MzAzNDksImV4cCI6MjA3MzUwNjM0OX0.lhgm5mWEP99KVEdxW9mnZHvLPmRqWPk_4x9Kn5OudME';
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+         // Optional: check session immediately for debugging
+    supabase.auth.getSession().then(({ data, error }) => {
+        if (error) {
+            console.error("⚠️ Error fetching session:", error);
+        } else {
+            console.log("🔑 Current session:", data.session);
+        }
+    });
     </script>
     
     <script src="https://cdn.tailwindcss.com"></script>
