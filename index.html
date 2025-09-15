@@ -442,25 +442,38 @@
         }
 
         async function handleLogin(event) {
-            event.preventDefault();
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
+  event.preventDefault();
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
 
-            const { data, error } = await supabase.auth.signInWithPassword({
-                email: email,
-                password: password,
-            });
+  try {
+    console.log("🔄 Attempting login with:", email);
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
 
-            if (error) {
-                elements.authError.textContent = error.message;
-                elements.authError.classList.remove('hidden');
-                console.error('Login failed:', error.message);
-            } else {
-                elements.loginSection.classList.add('hidden');
-                elements.gameContent.classList.remove('hidden');
-                loadHistoricalGames();
-            }
-        }
+    if (error) {
+      console.error("❌ Supabase login error:", error);
+      elements.authError.textContent = error.message || "Login failed.";
+      elements.authError.classList.remove("hidden");
+      return;
+    }
+
+    console.log("✅ Login successful:", data);
+    elements.authError.classList.add("hidden");
+    elements.loginSection.classList.add("hidden");
+    elements.gameContent.classList.remove("hidden");
+
+    // Load your data after login
+    loadHistoricalGames();
+
+  } catch (err) {
+    console.error("⚠️ Unexpected login error:", err);
+    elements.authError.textContent = "Unexpected error. Check console.";
+    elements.authError.classList.remove("hidden");
+  }
+}
 
         async function handleLogout() {
             const { error } = await supabase.auth.signOut();
