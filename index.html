@@ -1,20 +1,14 @@
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Padel Manager</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-    <script>
- const SUPABASE_URL = 'https://spekrchuvminnlxymxsp.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNwZWtyY2h1dm1pbm5seHlteHNwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc5MzAzNDksImV4cCI6MjA3MzUwNjM0OX0.lhgm5mWEP99KVEdxW9mnZHvLPmRqWPk_4x9Kn5OudME';
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    </script>
-    
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -39,452 +33,691 @@
         .modal-content {
             background-color: white;
             padding: 2rem;
-            border-radius: 0.5rem;
-            max-width: 90%;
-            width: 400px;
+            border-radius: 1rem;
             text-align: center;
-        }
-        .hidden {
-            display: none;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
     </style>
 </head>
-<body class="bg-gray-100 text-gray-800">
+<body class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 transition-colors duration-300 p-4 sm:p-8">
 
-    <div id="login-section" class="flex items-center justify-center min-h-screen bg-gray-100 p-4">
-        <div class="bg-white p-8 rounded-lg shadow-md w-full max-w-sm">
-            <h2 class="text-2xl font-bold mb-6 text-center">Login</h2>
-            <form id="login-form" class="space-y-4">
-                <div>
-                    <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
-                    <input type="email" id="email" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" required>
-                </div>
-                <div>
-                    <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
-                    <input type="password" id="password" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" required>
-                </div>
-                <button type="submit" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                    Log In
-                </button>
-                <div id="auth-error" class="mt-4 text-center text-red-500 text-sm hidden">
-                    Invalid credentials.
-                </div>
-            </form>
+    <div id="custom-modal" class="modal hidden">
+        <div class="modal-content bg-white dark:bg-gray-800 p-8 rounded-xl shadow-2xl">
+            <p id="modal-message" class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-6">Are you sure you want to reset the game? This will clear all data.</p>
+            <div class="flex justify-center space-x-4">
+                <button id="modal-confirm" class="px-6 py-2 rounded-full text-white font-bold bg-red-600 hover:bg-red-700 transition-colors duration-200">Confirm</button>
+                <button id="modal-cancel" class="px-6 py-2 rounded-full text-gray-800 dark:text-gray-200 bg-gray-300 hover:bg-gray-400 transition-colors duration-200">Cancel</button>
+            </div>
         </div>
     </div>
 
-    <div id="game-content" class="min-h-screen p-4 md:p-8 hidden">
-        <header class="flex justify-between items-center mb-6">
-            <h1 class="text-3xl md:text-4xl font-bold text-gray-900">Padel Manager</h1>
-            <button id="logoutButton" class="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 focus:outline-none">
-                Logout
-            </button>
+    <div id="auth-container" class="max-w-md mx-auto bg-white dark:bg-gray-800 shadow-2xl rounded-2xl p-6 md:p-10 transition-all duration-300">
+        <header class="text-center mb-8">
+            <h1 class="text-3xl sm:text-4xl font-extrabold text-gray-900 dark:text-gray-100">
+                Padel Manager
+            </h1>
+            <p class="mt-2 text-base sm:text-lg text-gray-600 dark:text-gray-400">
+                Sign in to organize and score your Padel games.
+            </p>
         </header>
-
-        <section id="setupSection" class="bg-white p-6 rounded-lg shadow-md">
-            <h2 class="text-xl font-semibold mb-4">Setup</h2>
-            <div class="mb-4">
-                <label for="playerNames" class="block text-sm font-medium text-gray-700 mb-1">Enter Player Names (separated by comma)</label>
-                <input type="text" id="playerNames" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+        <div class="space-y-4">
+            <div>
+                <label for="auth-email" class="block text-gray-700 dark:text-gray-300 mb-2">Email</label>
+                <input type="email" id="auth-email" placeholder="email@example.com"
+                    class="w-full px-4 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 transition-colors duration-200">
             </div>
-            <div class="mb-4">
-                <span class="block text-sm font-medium text-gray-700 mb-2">Number of players per game</span>
-                <div class="flex space-x-4">
-                    <label class="flex items-center">
-                        <input type="radio" name="num-players" value="4" checked class="form-radio text-blue-600">
-                        <span class="ml-2">4</span>
-                    </label>
-                    <label class="flex items-center">
-                        <input type="radio" name="num-players" value="2" class="form-radio text-blue-600">
-                        <span class="ml-2">2</span>
-                    </label>
-                </div>
+            <div>
+                <label for="auth-password" class="block text-gray-700 dark:text-gray-300 mb-2">Password</label>
+                <input type="password" id="auth-password" placeholder="********"
+                    class="w-full px-4 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 transition-colors duration-200">
             </div>
-            <button id="generateButton" class="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                Create Schedule
+            <button id="login-button" class="w-full px-6 py-3 rounded-full text-white font-bold bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200 shadow-md">
+                Login
             </button>
-        </section>
-
-        <section id="gameContainer" class="hidden mt-6 bg-white p-6 rounded-lg shadow-md">
-            <h2 class="text-xl font-semibold mb-4">Current Schedule</h2>
-            <div id="gameSchedule" class="space-y-4"></div>
-            <div class="mt-6 flex justify-between">
-                <button id="resetButton" class="px-4 py-2 bg-gray-400 text-white rounded-md hover:bg-gray-500 focus:outline-none hidden">
-                    Reset
-                </button>
-                <button id="exportButton" class="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 focus:outline-none hidden">
-                    Export
-                </button>
-            </div>
-        </section>
-
-        <section id="leaderboardSection" class="mt-6 bg-white p-6 rounded-lg shadow-md">
-            <h2 class="text-xl font-semibold mb-4">Leaderboard</h2>
-            <ul id="leaderboardList" class="space-y-2"></ul>
-        </section>
-        
-        <section id="historicalGamesSection" class="mt-6 bg-white p-6 rounded-lg shadow-md">
-            <h2 class="text-xl font-semibold mb-4">Historical Games</h2>
-            <div id="historicalGamesList" class="space-y-4"></div>
-        </section>
-    </div>
-
-    <div id="scoreModal" class="modal hidden">
-        <div class="modal-content">
-            <h3 class="text-lg font-semibold mb-4">Enter Scores</h3>
-            <div class="space-y-2 mb-4">
-                <div class="flex items-center space-x-2">
-                    <span id="team1Names" class="font-medium text-blue-600"></span>
-                    <input type="number" id="team1Score" class="w-16 text-center border rounded" min="0">
-                </div>
-                <div class="flex items-center space-x-2">
-                    <span id="team2Names" class="font-medium text-red-600"></span>
-                    <input type="number" id="team2Score" class="w-16 text-center border rounded" min="0">
-                </div>
-            </div>
-            <div class="flex justify-end space-x-2">
-                <button id="cancelScoreButton" class="px-4 py-2 text-gray-600 rounded-md hover:bg-gray-200">Cancel</button>
-                <button id="saveScoreButton" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">Save</button>
+            <button id="register-button" class="w-full px-6 py-3 rounded-full text-gray-800 dark:text-gray-200 bg-gray-300 hover:bg-gray-400 transition-colors duration-200 shadow-md">
+                Register
+            </button>
+            <div id="auth-message-box" class="hidden bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 rounded-lg" role="alert">
+                <p id="auth-message-content"></p>
             </div>
         </div>
     </div>
-    
+
+    <div id="app-container" class="max-w-4xl mx-auto bg-white dark:bg-gray-800 shadow-2xl rounded-2xl p-6 md:p-10 transition-all duration-300 hidden">
+
+        <header class="text-center mb-8">
+            <div class="flex justify-between items-center mb-4">
+                <h1 class="text-3xl sm:text-4xl font-extrabold text-gray-900 dark:text-gray-100">
+                    Padel Manager
+                </h1>
+                <button id="logout-button"
+                    class="px-4 py-2 rounded-full text-white font-bold bg-gray-600 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 transition-all duration-200 shadow-md">
+                    Logout
+                </button>
+            </div>
+            <p class="mt-2 text-base sm:text-lg text-gray-600 dark:text-gray-400">
+                Organize and score your Padel games with ease.
+            </p>
+        </header>
+        
+        <div class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 mb-8 justify-end">
+            <button id="reset-button"
+                class="w-full sm:w-auto px-6 py-3 rounded-full text-white font-bold bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 transition-all duration-200 shadow-md transform hover:scale-105 hidden">
+                Reset Game
+            </button>
+        </div>
+
+        <div id="setup-section" class="bg-gray-50 dark:bg-gray-700 p-4 sm:p-6 rounded-xl shadow-lg transition-colors duration-300">
+            <h2 class="text-xl sm:text-2xl font-bold mb-4 text-gray-900 dark:text-gray-100">1. Player Setup</h2>
+            <div id="message-box" class="hidden bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-4 rounded-lg" role="alert">
+                <p id="message-content"></p>
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700 dark:text-gray-300 mb-2">Number of Players</label>
+                <div class="flex space-x-4">
+                    <label class="inline-flex items-center">
+                        <input type="radio" class="form-radio text-blue-600 focus:ring-blue-500 rounded-full" name="num-players" value="4" checked>
+                        <span class="ml-2 text-gray-900 dark:text-gray-100">4 Players</span>
+                    </label>
+                    <label class="inline-flex items-center">
+                        <input type="radio" class="form-radio text-blue-600 focus:ring-blue-500 rounded-full" name="num-players" value="5">
+                        <span class="ml-2 text-gray-900 dark:text-gray-100">5 Players</span>
+                    </label>
+                </div>
+            </div>
+            <div class="mb-6">
+                <label for="player-names" class="block text-gray-700 dark:text-gray-300 mb-2">Player Names (comma separated)</label>
+                <input type="text" id="player-names" placeholder="e.g., John, Jane, Mike, Emily"
+                    class="w-full px-4 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 transition-colors duration-200">
+            </div>
+            <div class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
+                <button id="generate-button"
+                    class="w-full px-6 py-3 rounded-full text-white font-bold bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200 shadow-md transform hover:scale-105">
+                    Generate Games
+                </button>
+            </div>
+        </div>
+
+        <div id="game-container" class="mt-8 hidden">
+            <section class="bg-gray-50 dark:bg-gray-700 p-4 sm:p-6 rounded-xl shadow-lg transition-colors duration-300 mb-8">
+                <h2 class="text-xl sm:text-2xl font-bold mb-4 text-gray-900 dark:text-gray-100">2. Game Schedule</h2>
+                <div id="game-schedule" class="space-y-4">
+                    </div>
+            </section>
+
+            <section class="bg-gray-50 dark:bg-gray-700 p-4 sm:p-6 rounded-xl shadow-lg transition-colors duration-300 mb-8">
+                <h2 class="text-xl sm:text-2xl font-bold mb-4 text-gray-900 dark:text-gray-100">3. Live Leaderboard</h2>
+                <div id="leaderboard" class="space-y-6">
+                    </div>
+            </section>
+
+            <section class="bg-gray-50 dark:bg-gray-700 p-4 sm:p-6 rounded-xl shadow-lg transition-colors duration-300">
+                <h2 class="text-xl sm:text-2xl font-bold mb-4 text-gray-900 dark:text-gray-100">4. Export Data</h2>
+                <div class="flex justify-center">
+                    <button id="export-button"
+                        class="w-full px-6 py-3 rounded-full text-white font-bold bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 transition-all duration-200 shadow-md transform hover:scale-105">
+                        Export to CSV
+                    </button>
+                </div>
+            </section>
+        </div>
+    </div>
+
     <script>
-        const elements = {
-            loginSection: document.getElementById('login-section'),
-            gameContent: document.getElementById('game-content'),
-            loginForm: document.getElementById('login-form'),
-            authError: document.getElementById('auth-error'),
-            playerNamesInput: document.getElementById('playerNames'),
-            generateButton: document.getElementById('generateButton'),
-            resetButton: document.getElementById('resetButton'),
-            exportButton: document.getElementById('exportButton'),
-            setupSection: document.getElementById('setupSection'),
-            gameContainer: document.getElementById('gameContainer'),
-            gameSchedule: document.getElementById('gameSchedule'),
-            leaderboardList: document.getElementById('leaderboardList'),
-            historicalGamesList: document.getElementById('historicalGamesList'),
-            scoreModal: document.getElementById('scoreModal'),
-            team1Names: document.getElementById('team1Names'),
-            team2Names: document.getElementById('team2Names'),
-            team1ScoreInput: document.getElementById('team1Score'),
-            team2ScoreInput: document.getElementById('team2Score'),
-            saveScoreButton: document.getElementById('saveScoreButton'),
-            cancelScoreButton: document.getElementById('cancelScoreButton'),
-            logoutButton: document.getElementById('logoutButton'),
-        };
+        // Supabase Initialization
+        const SUPABASE_URL = 'https://spekrchuvminnlxymxsp.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNwZWtyY2h1dm1pbm5seHlteHNwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc5MzAzNDksImV4cCI6MjA3MzUwNjM0OX0.lhgm5mWEP99KVEdxW9mnZHvLPmRqWPk_4x9Kn5OudME';
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         const state = {
+            user: null,
             players: [],
-            numPlayers: 4,
-            schedule: [],
-            leaderboard: {},
-            currentScheduleId: null
+            numPlayers: 0,
+            games: [],
+            scores: {},
+            leaderboard: {
+                players: [],
+                doubles: []
+            },
+            game_id: null,
         };
 
-        // --- Supabase Database Functions ---
-        async function saveGameToSupabase(gameData) {
-            const { data, error } = await supabase
-                .from('games')
-                .insert([gameData]);
+        const elements = {
+            appContainer: document.getElementById('app-container'),
+            authContainer: document.getElementById('auth-container'),
+            authEmail: document.getElementById('auth-email'),
+            authPassword: document.getElementById('auth-password'),
+            loginButton: document.getElementById('login-button'),
+            registerButton: document.getElementById('register-button'),
+            logoutButton: document.getElementById('logout-button'),
+            authMessageBox: document.getElementById('auth-message-box'),
+            authMessageContent: document.getElementById('auth-message-content'),
+            setupSection: document.getElementById('setup-section'),
+            gameContainer: document.getElementById('game-container'),
+            playerNamesInput: document.getElementById('player-names'),
+            generateButton: document.getElementById('generate-button'),
+            resetButton: document.getElementById('reset-button'),
+            gameScheduleDiv: document.getElementById('game-schedule'),
+            leaderboardDiv: document.getElementById('leaderboard'),
+            exportButton: document.getElementById('export-button'),
+            numPlayersRadios: document.querySelectorAll('input[name="num-players"]'),
+            messageBox: document.getElementById('message-box'),
+            messageContent: document.getElementById('message-content'),
+            customModal: document.getElementById('custom-modal'),
+            modalConfirm: document.getElementById('modal-confirm'),
+            modalCancel: document.getElementById('modal-cancel'),
+        };
 
-            if (error) {
-                console.error('Error saving game:', error);
-                return false;
-            }
-            console.log('Game saved successfully:', data);
-            return true;
+        // Reusable message box function
+        function showMessage(message) {
+            elements.messageContent.textContent = message;
+            elements.messageBox.classList.remove('hidden');
         }
 
-        async function createScheduleInSupabase() {
-            const { data, error } = await supabase
-                .from('schedules')
-                .insert([{ created_at: new Date().toISOString() }])
-                .select()
-                .single();
+        function showAuthMessage(message) {
+            elements.authMessageContent.textContent = message;
+            elements.authMessageBox.classList.remove('hidden');
+        }
+
+        // Show/hide custom modal
+        function showModal() {
+            elements.customModal.classList.remove('hidden');
+        }
+        function hideModal() {
+            elements.customModal.classList.add('hidden');
+        }
+
+        // --- Core Game Logic ---
+
+        function generateSchedule4Players() {
+            const players = state.players;
+            const pairings = [
+                [[players[0], players[1]], [players[2], players[3]]],
+                [[players[0], players[2]], [players[1], players[3]]],
+                [[players[0], players[3]], [players[1], players[2]]]
+            ];
             
-            if (error) {
-                console.error('Error creating schedule:', error);
-                return null;
+            // Shuffle the unique pairings once
+            const shuffledPairings = pairings.sort(() => Math.random() - 0.5);
+
+            state.games = [];
+            // Change the loop to generate 15 games for 5 rounds
+            for (let i = 0; i < 15; i++) { 
+                const game = shuffledPairings[i % 3];
+                state.games.push({
+                    id: state.games.length + 1,
+                    doubleA: game[0],
+                    doubleB: game[1],
+                    resting: null,
+                    round: Math.floor(i / 3) + 1
+                });
             }
-            return data.id;
         }
 
-        async function loadHistoricalGames() {
-            const { data: games, error } = await supabase
-                .from('games')
-                .select(`
-                    *,
-                    schedule:schedule_id ( created_at )
-                `)
-                .order('schedule_id', { ascending: false });
+        function generateSchedule5Players() {
+            const players = state.players;
 
-            if (error) {
-                console.error('Error loading historical games:', error);
-                return;
-            }
+            const baseSchedule = [
+                { doubleA: [1, 2], doubleB: [3, 4], resting: 5 },
+                { doubleA: [2, 3], doubleB: [4, 5], resting: 1 },
+                { doubleA: [1, 4], doubleB: [3, 5], resting: 2 },
+                { doubleA: [1, 5], doubleB: [2, 4], resting: 3 },
+                { doubleA: [1, 3], doubleB: [2, 5], resting: 4 },
+                { doubleA: [2, 3], doubleB: [1, 4], resting: 5 },
+                { doubleA: [2, 4], doubleB: [3, 5], resting: 1 },
+                { doubleA: [3, 4], doubleB: [1, 5], resting: 2 },
+                { doubleA: [1, 2], doubleB: [4, 5], resting: 3 },
+                { doubleA: [2, 3], doubleB: [1, 5], resting: 4 },
+                { doubleA: [1, 3], doubleB: [2, 4], resting: 5 },
+                { doubleA: [3, 4], doubleB: [2, 5], resting: 1 },
+                { doubleA: [1, 3], doubleB: [4, 5], resting: 2 },
+                { doubleA: [1, 4], doubleB: [2, 5], resting: 3 },
+                { doubleA: [1, 2], doubleB: [3, 5], resting: 4 }
+            ];
 
-            elements.historicalGamesList.innerHTML = '';
-            games.forEach(game => {
-                const gameElement = document.createElement('div');
-                gameElement.className = 'bg-gray-100 p-4 rounded-md shadow-sm';
-                const createdDate = new Date(game.schedule.created_at).toLocaleString();
-                gameElement.innerHTML = `
-                    <p class="font-medium text-gray-900">Game on: ${createdDate}</p>
-                    <p class="text-sm text-gray-600">${game.player_1} & ${game.player_2} vs. ${game.player_3} & ${game.player_4}</p>
-                    <p class="text-sm font-bold mt-1">Score: ${game.score_team_1} - ${game.score_team_2}</p>
-                `;
-                elements.historicalGamesList.appendChild(gameElement);
+            state.games = baseSchedule.map((game, index) => {
+                return {
+                    id: index + 1,
+                    doubleA: [players[game.doubleA[0] - 1], players[game.doubleA[1] - 1]],
+                    doubleB: [players[game.doubleB[0] - 1], players[game.doubleB[1] - 1]],
+                    resting: players[game.resting - 1],
+                };
             });
         }
-        
-        // --- Core Padel Logic (mostly unchanged) ---
-        function shuffleArray(array) {
-            for (let i = array.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [array[i], array[j]] = [array[j], array[i]];
-            }
-        }
 
-        function generateSchedule() {
-            if (state.players.length < state.numPlayers) {
-                alert(`Please enter at least ${state.numPlayers} players.`);
-                return [];
-            }
-
-            let games = [];
-            let availablePlayers = [...state.players];
-            shuffleArray(availablePlayers);
-
-            while (availablePlayers.length >= state.numPlayers) {
-                let team1, team2;
-                if (state.numPlayers === 4) {
-                    team1 = [availablePlayers.pop(), availablePlayers.pop()];
-                    team2 = [availablePlayers.pop(), availablePlayers.pop()];
-                    games.push({
-                        team1: team1,
-                        team2: team2,
-                        score: null
-                    });
-                } else if (state.numPlayers === 2) {
-                    team1 = [availablePlayers.pop()];
-                    team2 = [availablePlayers.pop()];
-                    games.push({
-                        team1: team1,
-                        team2: team2,
-                        score: null
-                    });
-                }
-            }
-            return games;
-        }
-
-        function renderGameSchedule() {
-            elements.gameSchedule.innerHTML = '';
-            state.schedule.forEach((game, index) => {
-                const gameDiv = document.createElement('div');
-                gameDiv.className = 'flex justify-between items-center p-4 bg-gray-100 rounded-lg shadow-sm';
-                
-                const team1Players = game.team1.join(' & ');
-                const team2Players = game.team2.join(' & ');
-                
-                const scoreText = game.score ? `${game.score.team1} - ${game.score.team2}` : 'Enter Score';
-                
-                gameDiv.innerHTML = `
-                    <p class="text-gray-700">${team1Players} vs. ${team2Players}</p>
-                    <button class="score-button px-4 py-2 rounded-md font-medium text-white transition-colors" data-game-index="${index}" style="background-color: ${game.score ? '#22c55e' : '#f59e0b'};">
-                        ${scoreText}
-                    </button>
-                `;
-                elements.gameSchedule.appendChild(gameDiv);
-            });
-        }
-        
         function calculateLeaderboard() {
-            state.leaderboard = {};
-            state.players.forEach(player => state.leaderboard[player] = { wins: 0, losses: 0, points: 0 });
+            const playerStats = {};
+            const doubleStats = {};
+            state.players.forEach(p => {
+                playerStats[p] = { points: 0, gamesPlayed: 0, pointsWon: 0, pointsLost: 0 };
+            });
 
-            state.schedule.forEach(game => {
-                if (game.score) {
-                    const team1Won = game.score.team1 > game.score.team2;
-                    const team2Won = game.score.team2 > game.score.team1;
-                    
-                    if (team1Won) {
-                        game.team1.forEach(player => { state.leaderboard[player].wins++; state.leaderboard[player].points += 3; });
-                        game.team2.forEach(player => { state.leaderboard[player].losses++; });
-                    } else if (team2Won) {
-                        game.team2.forEach(player => { state.leaderboard[player].wins++; state.leaderboard[player].points += 3; });
-                        game.team1.forEach(player => { state.leaderboard[player].losses++; });
+            state.games.forEach(game => {
+                const gameScore = state.scores[game.id];
+                if (gameScore) {
+                    const [scoreA, scoreB] = gameScore.split(':').map(Number);
+                    if (!isNaN(scoreA) && !isNaN(scoreB)) {
+                        
+                        // Update individual player stats
+                        game.doubleA.forEach(p => {
+                            playerStats[p].points += scoreA;
+                            playerStats[p].gamesPlayed++;
+                            playerStats[p].pointsWon += scoreA;
+                            playerStats[p].pointsLost += scoreB;
+                        });
+                        game.doubleB.forEach(p => {
+                            playerStats[p].points += scoreB;
+                            playerStats[p].gamesPlayed++;
+                            playerStats[p].pointsWon += scoreB;
+                            playerStats[p].pointsLost += scoreA;
+                        });
+
+                        // Update doubles stats
+                        const doubleAKey = [...game.doubleA].sort().join(',');
+                        const doubleBKey = [...game.doubleB].sort().join(',');
+                        
+                        if (!doubleStats[doubleAKey]) doubleStats[doubleAKey] = { points: 0, gamesPlayed: 0, pointsWon: 0, pointsLost: 0 };
+                        if (!doubleStats[doubleBKey]) doubleStats[doubleBKey] = { points: 0, gamesPlayed: 0, pointsWon: 0, pointsLost: 0 };
+
+                        doubleStats[doubleAKey].points += scoreA;
+                        doubleStats[doubleAKey].gamesPlayed++;
+                        doubleStats[doubleAKey].pointsWon += scoreA;
+                        doubleStats[doubleAKey].pointsLost += scoreB;
+                        
+                        doubleStats[doubleBKey].points += scoreB;
+                        doubleStats[doubleBKey].gamesPlayed++;
+                        doubleStats[doubleBKey].pointsWon += scoreB;
+                        doubleStats[doubleBKey].pointsLost += scoreA;
                     }
                 }
+            });
+
+            // Calculate indexes
+            const sortedPlayers = Object.keys(playerStats).map(name => {
+                const stats = playerStats[name];
+                return {
+                    name,
+                    points: stats.points,
+                    gamesPlayed: stats.gamesPlayed,
+                    pointsPerGameIndex: stats.gamesPlayed > 0 ? (stats.points / stats.gamesPlayed).toFixed(2) : 'N/A'
+                };
+            }).sort((a, b) => b.points - a.points); // Sort by points
+
+            const sortedDoubles = Object.keys(doubleStats).map(doubleKey => {
+                const stats = doubleStats[doubleKey];
+                const [p1, p2] = doubleKey.split(',');
+                return {
+                    players: `${p1} & ${p2}`,
+                    points: stats.points,
+                    gamesPlayed: stats.gamesPlayed,
+                    pointsWonPerGameIndex: stats.gamesPlayed > 0 ? (stats.pointsWon / stats.gamesPlayed).toFixed(2) : 'N/A',
+                    positivePointsPerGameIndex: stats.gamesPlayed > 0 ? ((stats.pointsWon - stats.pointsLost) / stats.gamesPlayed).toFixed(2) : 'N/A'
+                };
+            }).sort((a, b) => b.points - a.points); // Sort by points
+
+            state.leaderboard.players = sortedPlayers;
+            state.leaderboard.doubles = sortedDoubles;
+        }
+
+        // --- Rendering Functions ---
+
+        function renderGameSchedule() {
+            elements.gameScheduleDiv.innerHTML = '';
+            state.games.forEach(game => {
+                const gameDiv = document.createElement('div');
+                gameDiv.className = "flex flex-col sm:flex-row items-center justify-between bg-white dark:bg-gray-800 p-4 rounded-xl shadow-inner transition-colors duration-300";
+                
+                let gameText = `<div class="font-semibold text-base sm:text-lg text-gray-900 dark:text-gray-100 mb-2 sm:mb-0 text-center sm:text-left">
+                                    <span class="text-blue-600 font-bold">Game ${game.id}</span>: ${game.doubleA.join(' & ')} <span class="text-gray-400 mx-2">vs</span> ${game.doubleB.join(' & ')}
+                                </div>`;
+                if (game.resting) {
+                    gameText += `<div class="text-sm text-gray-500 dark:text-gray-400 text-center sm:text-left">(${game.resting} resting)</div>`;
+                }
+
+                const scoreInputDiv = document.createElement('div');
+                scoreInputDiv.className = "flex space-x-2 items-center justify-center sm:justify-end mt-2 sm:mt-0";
+                scoreInputDiv.innerHTML = `
+                    <input type="number" 
+                        id="scoreA-${game.id}" 
+                        placeholder="0" 
+                        class="w-16 px-2 py-1 text-center border rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                        oninput="handleScoreInput(${game.id})"
+                        value="${state.scores[game.id] ? state.scores[game.id].split(':')[0] : ''}">
+                    <span class="text-lg">:</span>
+                    <input type="number" 
+                        id="scoreB-${game.id}" 
+                        placeholder="0" 
+                        class="w-16 px-2 py-1 text-center border rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                        oninput="handleScoreInput(${game.id})"
+                        value="${state.scores[game.id] ? state.scores[game.id].split(':')[1] : ''}">
+                `;
+
+                gameDiv.innerHTML = gameText;
+                gameDiv.appendChild(scoreInputDiv);
+                elements.gameScheduleDiv.appendChild(gameDiv);
             });
         }
 
         function renderLeaderboard() {
-            elements.leaderboardList.innerHTML = '';
-            const sortedPlayers = Object.entries(state.leaderboard).sort(([, a], [, b]) => b.points - a.points);
-            sortedPlayers.forEach(([player, stats]) => {
-                const li = document.createElement('li');
-                li.className = 'flex justify-between items-center p-3 bg-gray-100 rounded-md shadow-sm';
-                li.innerHTML = `
-                    <span class="font-medium">${player}</span>
-                    <span class="text-sm text-gray-600">Wins: ${stats.wins}, Losses: ${stats.losses}, Points: ${stats.points}</span>
-                `;
-                elements.leaderboardList.appendChild(li);
-            });
+            elements.leaderboardDiv.innerHTML = '';
+
+            // Individual Player Leaderboard
+            const playersTableHtml = `
+                <h3 class="text-lg sm:text-xl font-semibold mb-2 text-gray-900 dark:text-gray-100">Individual Players</h3>
+                <div class="overflow-x-auto rounded-lg shadow-md">
+                    <table class="min-w-full bg-white dark:bg-gray-800 text-sm md:text-base">
+                        <thead>
+                            <tr class="text-left text-gray-700 dark:text-gray-300 bg-gray-200 dark:bg-gray-700">
+                                <th class="p-4 rounded-tl-lg">Rank</th>
+                                <th class="p-4">Name</th>
+                                <th class="p-4">Points</th>
+                                <th class="p-4">Games Played</th>
+                                <th class="p-4 rounded-tr-lg">Points/Game</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${state.leaderboard.players.map((player, index) => `
+                                <tr class="${index % 2 === 0 ? 'bg-white dark:bg-gray-800' : 'bg-gray-50 dark:bg-gray-700'}">
+                                    <td class="p-4 font-bold text-gray-900 dark:text-gray-100">${index + 1}</td>
+                                    <td class="p-4">${player.name}</td>
+                                    <td class="p-4">${player.points}</td>
+                                    <td class="p-4">${player.gamesPlayed}</td>
+                                    <td class="p-4">${player.pointsPerGameIndex}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+            elements.leaderboardDiv.innerHTML += playersTableHtml;
+            
+            // Doubles Leaderboard
+            const doublesTableHtml = `
+                <h3 class="text-lg sm:text-xl font-semibold mt-6 mb-2 text-gray-900 dark:text-gray-100">Doubles</h3>
+                <div class="overflow-x-auto rounded-lg shadow-md">
+                    <table class="min-w-full bg-white dark:bg-gray-800 text-sm md:text-base">
+                        <thead>
+                            <tr class="text-left text-gray-700 dark:text-gray-300 bg-gray-200 dark:bg-gray-700">
+                                <th class="p-4 rounded-tl-lg">Rank</th>
+                                <th class="p-4">Players</th>
+                                <th class="p-4">Points</th>
+                                <th class="p-4">Games Played</th>
+                                <th class="p-4">Points Won/Game</th>
+                                <th class="p-4 rounded-tr-lg">+/- Index</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${state.leaderboard.doubles.map((double, index) => `
+                                <tr class="${index % 2 === 0 ? 'bg-white dark:bg-gray-800' : 'bg-gray-50 dark:bg-gray-700'}">
+                                    <td class="p-4 font-bold text-gray-900 dark:text-gray-100">${index + 1}</td>
+                                    <td class="p-4">${double.players}</td>
+                                    <td class="p-4">${double.points}</td>
+                                    <td class="p-4">${double.gamesPlayed}</td>
+                                    <td class="p-4">${double.pointsWonPerGameIndex}</td>
+                                    <td class="p-4">${double.positivePointsPerGameIndex}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+            elements.leaderboardDiv.innerHTML += doublesTableHtml;
         }
-        
-        // --- Event Handlers ---
+
+        // --- Event Handlers & State Management ---
+
+        async function handleScoreInput(gameId) {
+            const scoreA = document.getElementById(`scoreA-${gameId}`).value;
+            const scoreB = document.getElementById(`scoreB-${gameId}`).value;
+            state.scores[gameId] = `${scoreA}:${scoreB}`;
+
+            calculateLeaderboard();
+            renderLeaderboard();
+            await saveState();
+        }
+
         async function handleGenerateButton() {
             const playerNames = elements.playerNamesInput.value.split(',').map(name => name.trim()).filter(name => name.length > 0);
-            if (playerNames.length === 0) {
-                alert("Please enter player names.");
+            const numPlayers = parseInt(document.querySelector('input[name="num-players"]:checked').value);
+
+            if (playerNames.length !== numPlayers) {
+                showMessage(`Please enter exactly ${numPlayers} player names.`);
+                return;
+            } else {
+                elements.messageBox.classList.add('hidden');
+            }
+
+            state.players = playerNames;
+            state.numPlayers = numPlayers;
+            state.scores = {}; // Reset scores for a new game
+
+            if (numPlayers === 4) {
+                generateSchedule4Players();
+            } else {
+                generateSchedule5Players();
+            }
+
+            // Save the new game to the database
+            const { data, error } = await supabase
+                .from('games')
+                .insert([{ user_id: state.user.id, players: state.players, num_players: state.numPlayers, games_schedule: state.games }])
+                .select();
+
+            if (error) {
+                console.error("Error saving game:", error);
+                showMessage("Error saving game. Please try again.");
                 return;
             }
-            state.players = playerNames;
-            state.numPlayers = parseInt(document.querySelector('input[name="num-players"]:checked').value);
-            state.schedule = generateSchedule();
-            
-            // Save schedule and games to Supabase
-            state.currentScheduleId = await createScheduleInSupabase();
-            if (state.currentScheduleId) {
-                const gamesToSave = state.schedule.map(game => ({
-                    schedule_id: state.currentScheduleId,
-                    player_1: game.team1[0],
-                    player_2: game.team1[1] || null,
-                    player_3: game.team2[0],
-                    player_4: game.team2[1] || null,
-                }));
 
-                const { error } = await supabase.from('games').insert(gamesToSave);
-                if (error) {
-                    console.error('Failed to save games to Supabase:', error);
-                }
-            }
+            state.game_id = data[0].id; // Store the new game ID
+
+            calculateLeaderboard();
+            renderGameSchedule();
+            renderLeaderboard();
 
             elements.setupSection.classList.add('hidden');
             elements.gameContainer.classList.remove('hidden');
             elements.resetButton.classList.remove('hidden');
-            elements.exportButton.classList.remove('hidden');
-            renderGameSchedule();
-            calculateLeaderboard();
-            renderLeaderboard();
         }
 
         function handleResetButton() {
-            state.players = [];
-            state.schedule = [];
-            state.leaderboard = {};
-            state.currentScheduleId = null;
-            elements.playerNamesInput.value = '';
-            elements.setupSection.classList.remove('hidden');
-            elements.gameContainer.classList.add('hidden');
-            elements.resetButton.classList.add('hidden');
-            elements.exportButton.classList.add('hidden');
-            elements.gameSchedule.innerHTML = '';
-            elements.leaderboardList.innerHTML = '';
+            showModal();
         }
+
+        elements.modalConfirm.addEventListener('click', async () => {
+            // This is a soft reset, not a delete.
+            // You can implement a hard delete if needed.
+            state.players = [];
+            state.games = [];
+            state.scores = {};
+            state.game_id = null;
+            location.reload();
+        });
+
+        elements.modalCancel.addEventListener('click', () => {
+            hideModal();
+        });
 
         function handleExportButton() {
-            // Functionality to export to CSV, etc. remains the same
-            alert("Export functionality not yet implemented.");
-        }
-
-        function showScoreModal(gameIndex) {
-            const game = state.schedule[gameIndex];
-            elements.team1Names.textContent = game.team1.join(' & ');
-            elements.team2Names.textContent = game.team2.join(' & ');
+            let csvContent = "data:text/csv;charset=utf-8,";
             
-            elements.team1ScoreInput.value = game.score ? game.score.team1 : '';
-            elements.team2ScoreInput.value = game.score ? game.score.team2 : '';
+            // Headers
+            const headers = ["Game ID", "Date", "Time", "Double 1 Player A", "Double 1 Player B", "Double 2 Player A", "Double 2 Player B", "Resting Player", "Score", "Double 1 Points", "Double 2 Points", ...state.players.map(p => `${p} Pts`)];
+            csvContent += headers.join(',') + "\n";
             
-            elements.scoreModal.dataset.gameIndex = gameIndex;
-            elements.scoreModal.classList.remove('hidden');
-        }
+            const gameStats = {};
+            state.games.forEach(game => {
+                const gameScore = state.scores[game.id];
+                const [scoreA, scoreB] = gameScore ? gameScore.split(':').map(Number) : [0, 0];
+                
+                const playersPoints = {};
+                state.players.forEach(p => playersPoints[p] = 0);
+                if(gameScore) {
+                    game.doubleA.forEach(p => playersPoints[p] += scoreA);
+                    game.doubleB.forEach(p => playersPoints[p] += scoreB);
+                }
 
-        async function saveScore() {
-            const gameIndex = elements.scoreModal.dataset.gameIndex;
-            const game = state.schedule[gameIndex];
-            const score1 = parseInt(elements.team1ScoreInput.value);
-            const score2 = parseInt(elements.team2ScoreInput.value);
-
-            if (isNaN(score1) || isNaN(score2)) {
-                alert("Please enter valid scores.");
-                return;
-            }
-
-            game.score = { team1: score1, team2: score2 };
-            
-            // Update the game in Supabase
-            const { error } = await supabase
-                .from('games')
-                .update({ score_team_1: score1, score_team_2: score2 })
-                .eq('schedule_id', state.currentScheduleId)
-                .or(`player_1.eq.${game.team1[0]},player_3.eq.${game.team1[0]}`);
-
-            if (error) {
-                console.error('Error updating game score:', error);
-            }
-
-            renderGameSchedule();
-            calculateLeaderboard();
-            renderLeaderboard();
-            elements.scoreModal.classList.add('hidden');
-        }
-
-        async function handleLogin(event) {
-            event.preventDefault();
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-
-            const { data, error } = await supabase.auth.signInWithPassword({
-                email: email,
-                password: password,
+                gameStats[game.id] = { scoreA, scoreB, playersPoints };
             });
 
+            // Data rows
+            state.games.forEach(game => {
+                const now = new Date();
+                const gameData = gameStats[game.id];
+                const row = [
+                    game.id,
+                    now.toLocaleDateString(),
+                    now.toLocaleTimeString(),
+                    game.doubleA[0],
+                    game.doubleA[1],
+                    game.doubleB[0],
+                    game.doubleB[1],
+                    game.resting || '',
+                    state.scores[game.id] || '0:0',
+                    gameData.scoreA,
+                    gameData.scoreB,
+                    ...state.players.map(p => gameData.playersPoints[p] || 0)
+                ];
+                csvContent += row.map(e => `"${e}"`).join(',') + "\n";
+            });
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "padel-game-data.csv");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        async function saveState() {
+            if (!state.user || !state.game_id) return;
+            const { error } = await supabase
+                .from('scores')
+                .update({ score_data: state.scores })
+                .eq('user_id', state.user.id)
+                .eq('game_id', state.game_id);
+
             if (error) {
-                elements.authError.textContent = error.message;
-                elements.authError.classList.remove('hidden');
-                console.error('Login failed:', error.message);
+                console.error("Error saving scores:", error);
+                // Optionally show a user-friendly error message
+            }
+        }
+
+        async function loadState() {
+            if (!state.user) return false;
+            
+            // Fetch the last game created by the user
+            const { data, error } = await supabase
+                .from('games')
+                .select('*')
+                .eq('user_id', state.user.id)
+                .order('created_at', { ascending: false })
+                .limit(1);
+
+            if (error || !data || data.length === 0) {
+                console.error("No saved game found:", error);
+                return false;
+            }
+
+            const gameData = data[0];
+            state.game_id = gameData.id;
+            state.players = gameData.players;
+            state.numPlayers = gameData.num_players;
+            state.games = gameData.games_schedule;
+
+            // Fetch the scores for the loaded game
+            const { data: scoreData, error: scoreError } = await supabase
+                .from('scores')
+                .select('score_data')
+                .eq('user_id', state.user.id)
+                .eq('game_id', state.game_id)
+                .single();
+
+            if (!scoreError && scoreData) {
+                state.scores = scoreData.score_data;
             } else {
-                elements.loginSection.classList.add('hidden');
-                elements.gameContent.classList.remove('hidden');
-                loadHistoricalGames();
+                state.scores = {};
+            }
+
+            return true;
+        }
+
+        // --- Authentication Handlers ---
+
+        async function handleLogin() {
+            const email = elements.authEmail.value;
+            const password = elements.authPassword.value;
+            const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+            if (error) {
+                showAuthMessage(error.message);
+            } else {
+                showAuthMessage("Login successful!");
+            }
+        }
+
+        async function handleRegister() {
+            const email = elements.authEmail.value;
+            const password = elements.authPassword.value;
+            const { data, error } = await supabase.auth.signUp({ email, password });
+            if (error) {
+                showAuthMessage(error.message);
+            } else {
+                showAuthMessage("Registration successful! Please check your email for a confirmation link.");
             }
         }
 
         async function handleLogout() {
             const { error } = await supabase.auth.signOut();
-            if (!error) {
-                elements.loginSection.classList.remove('hidden');
-                elements.gameContent.classList.add('hidden');
-                handleResetButton();
-            } else {
-                console.error('Logout failed:', error.message);
+            if (error) {
+                console.error("Logout failed:", error);
             }
+            // The auth listener will handle the UI update
         }
 
-        // --- Initialization and Event Listeners ---
-        window.onload = async function() {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (session) {
-                elements.loginSection.classList.add('hidden');
-                elements.gameContent.classList.remove('hidden');
-                loadHistoricalGames();
-            }
+        // --- UI State Management ---
 
-            elements.loginForm.addEventListener('submit', handleLogin);
+        function showApp() {
+            elements.authContainer.classList.add('hidden');
+            elements.appContainer.classList.remove('hidden');
+        }
+
+        function showAuth() {
+            elements.authContainer.classList.remove('hidden');
+            elements.appContainer.classList.add('hidden');
+        }
+
+        // --- Initialization ---
+
+        window.onload = function() {
+            elements.loginButton.addEventListener('click', handleLogin);
+            elements.registerButton.addEventListener('click', handleRegister);
             elements.logoutButton.addEventListener('click', handleLogout);
             elements.generateButton.addEventListener('click', handleGenerateButton);
             elements.resetButton.addEventListener('click', handleResetButton);
             elements.exportButton.addEventListener('click', handleExportButton);
-            elements.saveScoreButton.addEventListener('click', saveScore);
-            elements.cancelScoreButton.addEventListener('click', () => elements.scoreModal.classList.add('hidden'));
 
-            elements.gameSchedule.addEventListener('click', (e) => {
-                if (e.target.classList.contains('score-button')) {
-                    const index = e.target.dataset.gameIndex;
-                    showScoreModal(index);
+            supabase.auth.onAuthStateChange((event, session) => {
+                if (session) {
+                    state.user = session.user;
+                    showApp();
+                    loadState().then(success => {
+                        if (success) {
+                            elements.playerNamesInput.value = state.players.join(', ');
+                            document.querySelector(`input[name="num-players"][value="${state.numPlayers}"]`).checked = true;
+                            
+                            elements.setupSection.classList.add('hidden');
+                            elements.gameContainer.classList.remove('hidden');
+                            elements.resetButton.classList.remove('hidden');
+
+                            renderGameSchedule();
+                            calculateLeaderboard();
+                            renderLeaderboard();
+                        }
+                    });
+                } else {
+                    state.user = null;
+                    showAuth();
                 }
             });
         };
