@@ -605,43 +605,44 @@
         }
 
         async function loadState() {
-            if (!state.user) return false;
-            
-            // Fetch the last game created by the user
-            const { data, error } = await supabase
-                .from('games')
-                .select('*')
-                .eq('user_id', state.user.id)
-                .order('created_at', { ascending: false })
-                .limit(1);
+    if (!state.user) return false;
+    
+    // Fetch the last game created by the user
+    const { data, error } = await supabase
+        .from('games')
+        .select('*')
+        .eq('user_id', state.user.id)
+        .order('created_at', { ascending: false })
+        .limit(1);
 
-            if (error || !data || data.length === 0) {
-                console.error("No saved game found:", error);
-                return false;
-            }
+    if (error || !data || data.length === 0) {
+        console.error("No saved game found:", error);
+        return false;
+    }
 
-            const gameData = data[0];
-            state.game_id = gameData.id;
-            state.players = gameData.players;
-            state.numPlayers = gameData.num_players;
-            state.games = gameData.games_schedule;
+    const gameData = data[0];
+    state.game_id = gameData.id;
+    state.players = gameData.players;
+    state.numPlayers = gameData.num_players;
+    state.games = gameData.games_schedule;
 
-            // Fetch the scores for the loaded game
-            const { data: scoreData, error: scoreError } = await supabase
-                .from('scores')
-                .select('score_data')
-                .eq('user_id', state.user.id)
-                .eq('game_id', state.game_id)
-                .single();
+    // Fetch the scores for the loaded game, ordering by created_at to get the latest entry.
+    const { data: scoreData, error: scoreError } = await supabase
+        .from('scores')
+        .select('score_data')
+        .eq('user_id', state.user.id)
+        .eq('game_id', state.game_id)
+        .order('created_at', { ascending: false }) // Get the latest score entry
+        .limit(1); // Get only the first (latest) entry
 
-            if (!scoreError && scoreData) {
-                state.scores = scoreData.score_data;
-            } else {
-                state.scores = {};
-            }
+    if (!scoreError && scoreData && scoreData.length > 0) {
+        state.scores = scoreData[0].score_data;
+    } else {
+        state.scores = {};
+    }
 
-            return true;
-        }
+    return true;
+}
 
         // --- Authentication Handlers ---
 
