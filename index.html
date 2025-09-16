@@ -6,18 +6,9 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <script>
-        const SUPABASE_URL = 'https://spekrchuvminnlxymxsp.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNwZWtyY2h1dm1pbm5seHlteHNwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc5MzAzNDksImV4cCI6MjA3MzUwNjM0OX0.lhgm5mWEP99KVEdxW9mnZHvLPmRqWPk_4x9Kn5OudME';
+        const SUPABASE_URL = 'YOUR_SUPABASE_URL';
+        const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-         // Optional: check session immediately for debugging
-    supabase.auth.getSession().then(({ data, error }) => {
-        if (error) {
-            console.error("⚠️ Error fetching session:", error);
-        } else {
-            console.log("🔑 Current session:", data.session);
-        }
-    });
     </script>
     
     <script src="https://cdn.tailwindcss.com"></script>
@@ -442,38 +433,25 @@
         }
 
         async function handleLogin(event) {
-  event.preventDefault();
-  const email = document.getElementById("email").value;
-  const password = document.getElementById("password").value;
+            event.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
 
-  try {
-    console.log("🔄 Attempting login with:", email);
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+            const { data, error } = await supabase.auth.signInWithPassword({
+                email: email,
+                password: password,
+            });
 
-    if (error) {
-      console.error("❌ Supabase login error:", error);
-      elements.authError.textContent = error.message || "Login failed.";
-      elements.authError.classList.remove("hidden");
-      return;
-    }
-
-    console.log("✅ Login successful:", data);
-    elements.authError.classList.add("hidden");
-    elements.loginSection.classList.add("hidden");
-    elements.gameContent.classList.remove("hidden");
-
-    // Load your data after login
-    loadHistoricalGames();
-
-  } catch (err) {
-    console.error("⚠️ Unexpected login error:", err);
-    elements.authError.textContent = "Unexpected error. Check console.";
-    elements.authError.classList.remove("hidden");
-  }
-}
+            if (error) {
+                elements.authError.textContent = error.message;
+                elements.authError.classList.remove('hidden');
+                console.error('Login failed:', error.message);
+            } else {
+                elements.loginSection.classList.add('hidden');
+                elements.gameContent.classList.remove('hidden');
+                loadHistoricalGames();
+            }
+        }
 
         async function handleLogout() {
             const { error } = await supabase.auth.signOut();
