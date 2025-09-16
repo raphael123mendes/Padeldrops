@@ -174,7 +174,7 @@
             players: [],
             numPlayers: 0,
             games: [],
-            scores: {},
+            matches: {}, // Store matches and scores here
             leaderboard: {
                 players: [],
                 doubles: []
@@ -292,10 +292,12 @@
                 playerStats[p] = { points: 0, gamesPlayed: 0, pointsWon: 0, pointsLost: 0 };
             });
 
+            // Use the matches object to calculate scores
             state.games.forEach(game => {
-                const gameScore = state.scores[game.id];
-                if (gameScore) {
-                    const [scoreA, scoreB] = gameScore.split(':').map(Number);
+                const matchId = game.id;
+                const matchScore = state.matches[matchId];
+                if (matchScore) {
+                    const [scoreA, scoreB] = [matchScore.team_a_score, matchScore.team_b_score];
                     if (!isNaN(scoreA) && !isNaN(scoreB)) {
                         
                         // Update individual player stats
@@ -376,20 +378,23 @@
 
                 const scoreInputDiv = document.createElement('div');
                 scoreInputDiv.className = "flex space-x-2 items-center justify-center sm:justify-end mt-2 sm:mt-0";
+
+                const matchScore = state.matches[game.id] || { team_a_score: '', team_b_score: '' };
+
                 scoreInputDiv.innerHTML = `
                     <input type="number" 
                         id="scoreA-${game.id}" 
                         placeholder="0" 
                         class="w-16 px-2 py-1 text-center border rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500" 
                         oninput="handleScoreInput(${game.id})"
-                        value="${state.scores[game.id] ? state.scores[game.id].split(':')[0] : ''}">
+                        value="${matchScore.team_a_score}">
                     <span class="text-lg">:</span>
                     <input type="number" 
                         id="scoreB-${game.id}" 
                         placeholder="0" 
                         class="w-16 px-2 py-1 text-center border rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500" 
                         oninput="handleScoreInput(${game.id})"
-                        value="${state.scores[game.id] ? state.scores[game.id].split(':')[1] : ''}">
+                        value="${matchScore.team_b_score}">
                 `;
 
                 gameDiv.innerHTML = gameText;
@@ -466,14 +471,25 @@
 
         // --- Event Handlers & State Management ---
 
-        async function handleScoreInput(gameId) {
-            const scoreA = document.getElementById(`scoreA-${gameId}`).value;
-            const scoreB = document.getElementById(`scoreB-${gameId}`).value;
-            state.scores[gameId] = `${scoreA}:${scoreB}`;
+        async function handleScoreInput(matchId) {
+            const scoreA = document.getElementById(`scoreA-${matchId}`).value;
+            const scoreB = document.getElementById(`scoreB-${matchId}`).value;
 
+            // Update the local state first
+            if (!state.matches[matchId]) {
+                state.matches[matchId] = {};
+            }
+            state.matches[matchId].team_a_score = scoreA;
+            state.matches[matchId].team_b_score = scoreB;
+            
             calculateLeaderboard();
             renderLeaderboard();
-            await saveState();
+
+            // Find the full match object from the games array
+            const matchToSave = state.games.find(g => g.id === matchId);
+            if (matchToSave) {
+                await saveScore(matchToSave, scoreA, scoreB);
+            }
         }
 
         async function handleGenerateButton() {
@@ -489,7 +505,7 @@
 
             state.players = playerNames;
             state.numPlayers = numPlayers;
-            state.scores = {}; // Reset scores for a new game
+            state.matches = {}; // Reset scores for a new game
 
             if (numPlayers === 4) {
                 generateSchedule4Players();
@@ -498,9 +514,9 @@
             }
 
             // Save the new game to the database
-            const { data, error } = await supabase
+            const { data: gameData, error } = await supabase
                 .from('games')
-                .insert([{ user_id: state.user.id, players: state.players, num_players: state.numPlayers, games_schedule: state.games }])
+                .insert([{ user_id: state.user.id, game_type: state.numPlayers, player_names: state.players }])
                 .select();
 
             if (error) {
@@ -509,7 +525,28 @@
                 return;
             }
 
-            state.game_id = data[0].id; // Store the new game ID
+            state.game_id = gameData[0].id; // Store the new game ID
+
+            // Now, save all matches
+            const matchesToInsert = state.games.map(match => ({
+                game_id: state.game_id,
+                team_a_players: match.doubleA,
+                team_b_players: match.doubleB,
+                resting_player: match.resting,
+                match_id_in_schedule: match.id, // This is a new column to keep track of the original schedule order
+                team_a_score: 0,
+                team_b_score: 0
+            }));
+
+            const { error: matchesError } = await supabase
+                .from('matches')
+                .insert(matchesToInsert);
+
+            if (matchesError) {
+                console.error("Error saving matches:", matchesError);
+                showMessage("Error saving matches. Please try again.");
+                return;
+            }
 
             calculateLeaderboard();
             renderGameSchedule();
@@ -529,7 +566,7 @@
             // You can implement a hard delete if needed.
             state.players = [];
             state.games = [];
-            state.scores = {};
+            state.matches = {};
             state.game_id = null;
             location.reload();
         });
@@ -542,28 +579,21 @@
             let csvContent = "data:text/csv;charset=utf-8,";
             
             // Headers
-            const headers = ["Game ID", "Date", "Time", "Double 1 Player A", "Double 1 Player B", "Double 2 Player A", "Double 2 Player B", "Resting Player", "Score", "Double 1 Points", "Double 2 Points", ...state.players.map(p => `${p} Pts`)];
+            const headers = ["Game ID", "Date", "Time", "Double 1 Player A", "Double 1 Player B", "Double 2 Player A", "Double 2 Player B", "Resting Player", "Team A Score", "Team B Score", ...state.players];
             csvContent += headers.join(',') + "\n";
             
-            const gameStats = {};
-            state.games.forEach(game => {
-                const gameScore = state.scores[game.id];
-                const [scoreA, scoreB] = gameScore ? gameScore.split(':').map(Number) : [0, 0];
-                
-                const playersPoints = {};
-                state.players.forEach(p => playersPoints[p] = 0);
-                if(gameScore) {
-                    game.doubleA.forEach(p => playersPoints[p] += scoreA);
-                    game.doubleB.forEach(p => playersPoints[p] += scoreB);
-                }
-
-                gameStats[game.id] = { scoreA, scoreB, playersPoints };
-            });
-
             // Data rows
             state.games.forEach(game => {
                 const now = new Date();
-                const gameData = gameStats[game.id];
+                const matchScore = state.matches[game.id] || { team_a_score: 0, team_b_score: 0 };
+                
+                const playersPoints = {};
+                state.players.forEach(p => playersPoints[p] = 0);
+                if(matchScore) {
+                    game.doubleA.forEach(p => playersPoints[p] += matchScore.team_a_score);
+                    game.doubleB.forEach(p => playersPoints[p] += matchScore.team_b_score);
+                }
+
                 const row = [
                     game.id,
                     now.toLocaleDateString(),
@@ -573,10 +603,9 @@
                     game.doubleB[0],
                     game.doubleB[1],
                     game.resting || '',
-                    state.scores[game.id] || '0:0',
-                    gameData.scoreA,
-                    gameData.scoreB,
-                    ...state.players.map(p => gameData.playersPoints[p] || 0)
+                    matchScore.team_a_score,
+                    matchScore.team_b_score,
+                    ...state.players.map(p => playersPoints[p] || 0)
                 ];
                 csvContent += row.map(e => `"${e}"`).join(',') + "\n";
             });
@@ -590,57 +619,71 @@
             document.body.removeChild(link);
         }
 
-async function saveState() {
-    if (!state.user || !state.game_id) return;
-    const { error } = await supabase
-        .from('scores')
-        .upsert({ user_id: state.user.id, game_id: state.game_id, score_data: state.scores })
-        .select(); // Add .select() to return the updated object.
-    
-    if (error) {
-        console.error("Error saving scores:", error);
-    }
-}
+        async function saveScore(match, teamAScore, teamBScore) {
+            if (!state.user || !state.game_id) return;
+            const { error } = await supabase
+                .from('matches')
+                .upsert({ 
+                    game_id: state.game_id, 
+                    match_id_in_schedule: match.id,
+                    team_a_score: teamAScore,
+                    team_b_score: teamBScore
+                }, { onConflict: 'game_id, match_id_in_schedule' })
+                .select();
+            
+            if (error) {
+                console.error("Error saving score:", error);
+            }
+        }
 
         async function loadState() {
-    if (!state.user) return false;
-    
-    // Fetch the last game created by the user
-    const { data, error } = await supabase
-        .from('games')
-        .select('*')
-        .eq('user_id', state.user.id)
-        .order('created_at', { ascending: false })
-        .limit(1);
+            if (!state.user) return false;
+            
+            // Fetch the last game created by the user
+            const { data: gameData, error: gameError } = await supabase
+                .from('games')
+                .select('*')
+                .eq('user_id', state.user.id)
+                .order('created_at', { ascending: false })
+                .limit(1)
+                .single();
 
-    if (error || !data || data.length === 0) {
-        console.error("No saved game found:", error);
-        return false;
-    }
+            if (gameError || !gameData) {
+                console.error("No saved game found:", gameError);
+                return false;
+            }
 
-    const gameData = data[0];
-    state.game_id = gameData.id;
-    state.players = gameData.players;
-    state.numPlayers = gameData.num_players;
-    state.games = gameData.games_schedule;
+            state.game_id = gameData.id;
+            state.players = gameData.player_names;
+            state.numPlayers = gameData.game_type;
 
-    // Fetch the scores for the loaded game, ordering by created_at to get the latest entry.
-    const { data: scoreData, error: scoreError } = await supabase
-        .from('scores')
-        .select('score_data')
-        .eq('user_id', state.user.id)
-        .eq('game_id', state.game_id)
-        .order('created_at', { ascending: false }) // Get the latest score entry
-        .limit(1); // Get only the first (latest) entry
+            // Fetch all matches for the loaded game
+            const { data: matchesData, error: matchesError } = await supabase
+                .from('matches')
+                .select('*')
+                .eq('game_id', state.game_id)
+                .order('match_id_in_schedule', { ascending: true });
 
-    if (!scoreError && scoreData && scoreData.length > 0) {
-        state.scores = scoreData[0].score_data;
-    } else {
-        state.scores = {};
-    }
+            if (matchesError || !matchesData) {
+                console.error("Error loading matches:", matchesError);
+                return false;
+            }
 
-    return true;
-}
+            // Restore the game schedule and matches
+            if (state.numPlayers === 4) {
+                generateSchedule4Players();
+            } else {
+                generateSchedule5Players();
+            }
+
+            // Populate the state.matches object from the fetched data
+            state.matches = {};
+            matchesData.forEach(match => {
+                state.matches[match.match_id_in_schedule] = match;
+            });
+
+            return true;
+        }
 
         // --- Authentication Handlers ---
 
