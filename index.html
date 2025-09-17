@@ -532,18 +532,44 @@
         document.body.removeChild(link);
     }
 
-    // --- Supabase Functions ---
-    async function signIn() {
-        const email = elements.authEmail.value;
-        const password = elements.authPassword.value;
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) {
-            showMessage(error.message);
-        } else {
-            showMessage("Signed in successfully!");
-            elements.authSection.classList.add('hidden');
-        }
+   // --- Supabase Functions ---
+async function saveToDatabase() {
+    // Correct way to get the session and user
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+    
+    if (sessionError || !session) {
+        showMessage("Please log in to save your game.");
+        return;
     }
+
+    const userId = session.user.id;
+    const loadingId = generateLoadingId();
+    const recordsToInsert = state.games.map(game => {
+        const score = state.scores[game.id];
+        const [scoreA, scoreB] = score ? score.split(':').map(Number) : [null, null];
+
+        return {
+            user_id: userId,
+            loading_id: loadingId,
+            game_number: game.id,
+            team_a_players: JSON.stringify(game.doubleA),
+            team_b_players: JSON.stringify(game.doubleB),
+            team_a_result: scoreA,
+            team_b_result: scoreB,
+            resting_player: game.resting || null,
+        };
+    });
+
+    const { error } = await supabase
+        .from('padel_games')
+        .insert(recordsToInsert);
+
+    if (error) {
+        showMessage("Error saving game to database: " + error.message);
+    } else {
+        showMessage("Game successfully saved to the database!");
+    }
+}
 
     async function signUp() {
         const email = elements.authEmail.value;
