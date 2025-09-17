@@ -1,491 +1,101 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Padel Manager</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-        }
-        input[type="number"]::-webkit-inner-spin-button, 
-        input[type="number"]::-webkit-outer-spin-button { 
-            -webkit-appearance: none;
-            margin: 0;
-        }
-        .modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
-        .modal-content {
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            text-align: center;
-        }
-    </style>
-</head>
-<body class="bg-gray-100 text-gray-900 dark:bg-gray-900 dark:text-gray-100 min-h-screen flex flex-col items-center p-4 sm:p-8 transition-colors duration-300">
+// New elements for the auth section
+const authElements = {
+    authSection: document.getElementById('auth-section'),
+    authEmail: document.getElementById('auth-email'),
+    authPassword: document.getElementById('auth-password'),
+    signInButton: document.getElementById('auth-sign-in'),
+    signUpButton: document.getElementById('auth-sign-up'),
+    saveButton: document.getElementById('save-button'),
+};
 
-    <main class="w-full max-w-4xl space-y-8">
-        <header class="text-center mb-8">
-            <h1 class="text-4xl sm:text-5xl font-bold text-blue-600">Padel Manager</h1>
-            <p class="mt-2 text-lg text-gray-600 dark:text-gray-400">Manage your padel games and save your results to the cloud.</p>
-        </header>
+// ... existing state and elements objects ...
 
-        <div id="auth-section" class="bg-gray-50 dark:bg-gray-700 p-4 sm:p-6 rounded-xl shadow-lg transition-colors duration-300 mb-8">
-            <h2 class="text-xl sm:text-2xl font-bold mb-4 text-gray-900 dark:text-gray-100">Sign In / Sign Up</h2>
-            <input type="email" id="auth-email" placeholder="Email" class="w-full px-4 py-2 mb-4 rounded-md text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-800">
-            <input type="password" id="auth-password" placeholder="Password" class="w-full px-4 py-2 mb-4 rounded-md text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-800">
-            <div class="flex space-x-4">
-                <button id="auth-sign-in" class="w-full px-6 py-3 rounded-full text-white font-bold bg-blue-600 hover:bg-blue-700 transition-colors duration-300">Sign In</button>
-                <button id="auth-sign-up" class="w-full px-6 py-3 rounded-full text-white font-bold bg-gray-600 hover:bg-gray-700 transition-colors duration-300">Sign Up</button>
-            </div>
-        </div>
+// Add to your elements object
+elements.saveButton = document.getElementById('save-button');
 
-        <section id="setup-section" class="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-xl shadow-lg transition-colors duration-300">
-            <h2 class="text-xl sm:text-2xl font-bold mb-4 text-gray-900 dark:text-gray-100">1. Setup Game</h2>
-            <div class="space-y-4">
-                <div class="flex flex-col sm:flex-row sm:items-center space-y-4 sm:space-y-0 sm:space-x-4">
-                    <label for="num-players-4" class="inline-flex items-center">
-                        <input type="radio" id="num-players-4" name="num-players" value="4" class="form-radio text-blue-600 h-5 w-5" checked>
-                        <span class="ml-2">4 Players</span>
-                    </label>
-                    <label for="num-players-5" class="inline-flex items-center">
-                        <input type="radio" id="num-players-5" name="num-players" value="5" class="form-radio text-blue-600 h-5 w-5">
-                        <span class="ml-2">5 Players</span>
-                    </label>
-                    <label for="num-players-6" class="inline-flex items-center">
-                        <input type="radio" id="num-players-6" name="num-players" value="6" class="form-radio text-blue-600 h-5 w-5">
-                        <span class="ml-2">6 Players</span>
-                    </label>
-                </div>
-                <div>
-                    <label for="player-names" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Enter Player Names (comma-separated):</label>
-                    <textarea id="player-names" rows="4" class="w-full p-3 rounded-lg border border-gray-300 focus:ring focus:ring-blue-200 focus:border-blue-500 transition-colors duration-300 text-gray-900 bg-white dark:bg-gray-800 dark:text-gray-100" placeholder="e.g., John, Jane, Michael, Emily"></textarea>
-                </div>
-                <div class="text-center mt-6">
-                    <button id="generate-button" class="w-full sm:w-auto px-8 py-3 rounded-full text-white font-bold bg-blue-600 hover:bg-blue-700 transition-colors duration-300">Generate Games</button>
-                </div>
-            </div>
-        </section>
+// New authentication functions
+async function signIn() {
+    const email = authElements.authEmail.value;
+    const password = authElements.authPassword.value;
+    const { user, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) console.error(error);
+    else console.log('Signed in successfully!', user);
+}
 
-        <section id="game-container" class="hidden bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-xl shadow-lg transition-colors duration-300">
-            <h2 class="text-xl sm:text-2xl font-bold mb-4 text-gray-900 dark:text-gray-100">2. Game Play & Score</h2>
-            <div id="game-schedule" class="space-y-6"></div>
-        </section>
+async function signUp() {
+    const email = authElements.authEmail.value;
+    const password = authElements.authPassword.value;
+    const { user, error } = await supabase.auth.signUp({ email, password });
+    if (error) console.error(error);
+    else console.log('Signed up successfully! Please check your email for confirmation.', user);
+}
 
-        <section id="leaderboard-section" class="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-xl shadow-lg transition-colors duration-300">
-            <h2 class="text-xl sm:text-2xl font-bold mb-4 text-gray-900 dark:text-gray-100">3. Leaderboard</h2>
-            <div class="overflow-x-auto">
-                <table id="leaderboard-table" class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                    <thead class="bg-gray-50 dark:bg-gray-700">
-                        <tr>
-                            <th class="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Player</th>
-                            <th class="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Games Played</th>
-                            <th class="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Games Won</th>
-                        </tr>
-                    </thead>
-                    <tbody id="leaderboard-body" class="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
-                        </tbody>
-                </table>
-            </div>
-        </section>
+// Function to generate a unique loading ID for the session
+function generateLoadingId() {
+    // This is a simple example. A more robust solution might use a UUID library.
+    const uniqueString = state.games.map(g => `${g.id}${state.scores[g.id] || ''}`).join('');
+    return btoa(uniqueString + Date.now()).substring(0, 20);
+}
 
-        <section class="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-xl shadow-lg transition-colors duration-300">
-            <h2 class="text-xl sm:text-2xl font-bold mb-4 text-gray-900 dark:text-gray-100">4. Save & Export</h2>
-            <div class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 justify-center">
-                <button id="save-button" class="w-full sm:w-auto px-6 py-3 rounded-full text-white font-bold bg-blue-600 hover:bg-blue-700 transition-colors duration-300">Save to Database</button>
-                <button id="export-button" class="w-full sm:w-auto px-6 py-3 rounded-full text-white font-bold bg-green-600 hover:bg-green-700 transition-colors duration-300">Export to CSV</button>
-                <button id="reset-button" class="w-full sm:w-auto px-6 py-3 rounded-full text-white font-bold bg-gray-400 hover:bg-gray-500 transition-colors duration-300">Reset Game</button>
-            </div>
-        </section>
-    </main>
+// New function to save data to Supabase
+async function saveToDatabase() {
+    const { data: { user } } = await supabase.auth.getSession();
+    if (!user) {
+        showMessage("Please log in to save your game.");
+        return;
+    }
 
-    <div id="message-modal" class="modal hidden">
-        <div class="modal-content text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg max-w-sm w-full">
-            <p id="modal-text" class="mb-4 text-lg"></p>
-            <button id="modal-close-button" class="px-6 py-2 rounded-full text-white font-bold bg-blue-600 hover:bg-blue-700 transition-colors duration-300">OK</button>
-        </div>
-    </div>
+    const loadingId = generateLoadingId();
+    const recordsToInsert = state.games.map(game => {
+        const score = state.scores[game.id];
+        const [scoreA, scoreB] = score ? score.split(':').map(Number) : [null, null];
 
-    <script>
-        // --- Supabase Configuration ---
-         const SUPABASE_URL = 'https://spekrchuvminnlxymxsp.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNwZWtyY2h1dm1pbm5seHlteHNwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc5MzAzNDksImV4cCI6MjA3MzUwNjM0OX0.lhgm5mWEP99KVEdxW9mnZHvLPmRqWPk_4x9Kn5OudME';
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-        // --- State Management ---
-        const state = {
-            players: [],
-            numPlayers: 4,
-            schedule: [],
-            games: [],
-            scores: {},
-            leaderboard: {},
-            currentPlayerIndex: 0
+        return {
+            user_id: user.id,
+            loading_id: loadingId,
+            game_number: game.id,
+            team_a_players: JSON.stringify(game.doubleA),
+            team_b_players: JSON.stringify(game.doubleB),
+            team_a_result: scoreA,
+            team_b_result: scoreB,
+            resting_player: game.resting || null,
         };
+    });
 
-        // --- Elements ---
-        const elements = {
-            setupSection: document.getElementById('setup-section'),
-            gameContainer: document.getElementById('game-container'),
-            playerNamesInput: document.getElementById('player-names'),
-            generateButton: document.getElementById('generate-button'),
-            resetButton: document.getElementById('reset-button'),
-            exportButton: document.getElementById('export-button'),
-            saveButton: document.getElementById('save-button'),
-            gameSchedule: document.getElementById('game-schedule'),
-            leaderboardTable: document.getElementById('leaderboard-table'),
-            leaderboardBody: document.getElementById('leaderboard-body'),
-            messageModal: document.getElementById('message-modal'),
-            modalText: document.getElementById('modal-text'),
-            modalCloseButton: document.getElementById('modal-close-button'),
-            authSection: document.getElementById('auth-section'),
-            authEmail: document.getElementById('auth-email'),
-            authPassword: document.getElementById('auth-password'),
-            signInButton: document.getElementById('auth-sign-in'),
-            signUpButton: document.getElementById('auth-sign-up'),
-        };
+    const { data, error } = await supabase
+        .from('padel_games')
+        .insert(recordsToInsert);
 
-        // --- UI Functions ---
-        function showMessage(message) {
-            elements.modalText.textContent = message;
-            elements.messageModal.classList.remove('hidden');
+    if (error) {
+        showMessage("Error saving game to database: " + error.message);
+    } else {
+        showMessage("Game successfully saved to the database!");
+    }
+}
+
+// Update the event listeners
+window.onload = function() {
+    // ... existing listeners ...
+    authElements.signInButton.addEventListener('click', signIn);
+    authElements.signUpButton.addEventListener('click', signUp);
+    elements.saveButton.addEventListener('click', saveToDatabase);
+
+    // Initial check for a user session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+        if (session) {
+            // User is logged in, hide auth section
+            authElements.authSection.classList.add('hidden');
         }
+    });
 
-        function renderGameSchedule() {
-            elements.gameSchedule.innerHTML = '';
-            state.games.forEach((game, index) => {
-                const gameDiv = document.createElement('div');
-                gameDiv.className = 'bg-gray-100 dark:bg-gray-700 p-4 rounded-lg shadow-inner flex flex-col sm:flex-row sm:items-center justify-between space-y-4 sm:space-y-0';
-                gameDiv.innerHTML = `
-                    <div class="flex-grow">
-                        <h3 class="font-bold text-lg text-blue-600">Game ${index + 1}</h3>
-                        <p class="mt-1 text-gray-700 dark:text-gray-300">
-                            Team A: <span class="font-semibold">${game.teamA.join(' & ')}</span>
-                        </p>
-                        <p class="text-gray-700 dark:text-gray-300">
-                            Team B: <span class="font-semibold">${game.teamB.join(' & ')}</span>
-                        </p>
-                        ${game.resting ? `<p class="mt-2 text-sm text-gray-500 dark:text-gray-400">Resting: <span class="font-semibold">${game.resting}</span></p>` : ''}
-                    </div>
-                    <div class="flex items-center space-x-2 w-full sm:w-auto justify-end">
-                        <input type="number" id="scoreA-${game.id}" value="${(state.scores[game.id] || '').split(':')[0] || ''}" min="0" class="w-16 p-2 rounded-lg border border-gray-300 text-center text-gray-900 bg-white dark:bg-gray-800 dark:text-gray-100">
-                        <span class="text-xl font-bold">:</span>
-                        <input type="number" id="scoreB-${game.id}" value="${(state.scores[game.id] || '').split(':')[1] || ''}" min="0" class="w-16 p-2 rounded-lg border border-gray-300 text-center text-gray-900 bg-white dark:bg-gray-800 dark:text-gray-100">
-                    </div>
-                `;
-                elements.gameSchedule.appendChild(gameDiv);
+    // ... existing loadState logic ...
+};
 
-                document.getElementById(`scoreA-${game.id}`).addEventListener('input', (e) => handleScoreChange(game.id, 'A', e.target.value));
-                document.getElementById(`scoreB-${game.id}`).addEventListener('input', (e) => handleScoreChange(game.id, 'B', e.target.value));
-            });
-        }
-
-        function renderLeaderboard() {
-            const sortedPlayers = Object.entries(state.leaderboard).sort(([, a], [, b]) => b.gamesWon - a.gamesWon || b.gamesPlayed - a.gamesPlayed);
-            elements.leaderboardBody.innerHTML = '';
-            sortedPlayers.forEach(([player, data]) => {
-                const row = document.createElement('tr');
-                row.className = 'bg-white dark:bg-gray-800';
-                row.innerHTML = `
-                    <td class="px-4 sm:px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">${player}</td>
-                    <td class="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">${data.gamesPlayed}</td>
-                    <td class="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">${data.gamesWon}</td>
-                `;
-                elements.leaderboardBody.appendChild(row);
-            });
-        }
-
-        // --- Core Logic ---
-        function generateGames(players) {
-            const n = players.length;
-            const games = [];
-            const allPlayers = [...players];
-            
-            // For 4 players, a single round-robin set
-            if (n === 4) {
-                games.push({ id: 1, teamA: [allPlayers[0], allPlayers[1]], teamB: [allPlayers[2], allPlayers[3]], resting: null });
-                games.push({ id: 2, teamA: [allPlayers[0], allPlayers[2]], teamB: [allPlayers[1], allPlayers[3]], resting: null });
-                games.push({ id: 3, teamA: [allPlayers[0], allPlayers[3]], teamB: [allPlayers[1], allPlayers[2]], resting: null });
-                return games;
-            }
-
-            // For 5 or 6 players, use a circular permutation
-            const numRounds = n % 2 === 0 ? n - 1 : n;
-            const rotatingPlayers = [...allPlayers];
-
-            for (let round = 0; round < numRounds; round++) {
-                const gamePlayers = rotatingPlayers;
-                const half = Math.floor(gamePlayers.length / 2);
-                
-                let restingPlayer = null;
-                if (n % 2 !== 0) {
-                    restingPlayer = gamePlayers[0];
-                }
-                
-                const pairs = [];
-                for (let i = 0; i < half; i++) {
-                    pairs.push([gamePlayers[i], gamePlayers[gamePlayers.length - 1 - i]]);
-                }
-                
-                // Shuffle pairs to ensure teams are varied
-                pairs.sort(() => Math.random() - 0.5);
-
-                for (let i = 0; i < pairs.length; i += 2) {
-                    if (pairs[i+1]) {
-                        games.push({
-                            id: games.length + 1,
-                            teamA: pairs[i],
-                            teamB: pairs[i + 1],
-                            resting: restingPlayer
-                        });
-                    }
-                }
-                
-                // Rotate players for the next round
-                const first = rotatingPlayers.shift();
-                rotatingPlayers.push(first);
-            }
-            return games;
-        }
-
-        function calculateLeaderboard() {
-            state.leaderboard = state.players.reduce((acc, player) => {
-                acc[player] = { gamesPlayed: 0, gamesWon: 0 };
-                return acc;
-            }, {});
-
-            state.games.forEach(game => {
-                const score = state.scores[game.id];
-                if (!score) return;
-
-                const [scoreA, scoreB] = score.split(':').map(Number);
-                if (isNaN(scoreA) || isNaN(scoreB)) return;
-
-                game.teamA.forEach(player => state.leaderboard[player].gamesPlayed++);
-                game.teamB.forEach(player => state.leaderboard[player].gamesPlayed++);
-
-                if (scoreA > scoreB) {
-                    game.teamA.forEach(player => state.leaderboard[player].gamesWon++);
-                } else if (scoreB > scoreA) {
-                    game.teamB.forEach(player => state.leaderboard[player].gamesWon++);
-                }
-            });
-        }
-
-        // --- Event Handlers ---
-        function handleGenerateButton() {
-            const playerNames = elements.playerNamesInput.value.split(',').map(name => name.trim()).filter(name => name.length > 0);
-            const selectedNumPlayers = parseInt(document.querySelector('input[name="num-players"]:checked').value);
-            
-            if (playerNames.length !== selectedNumPlayers) {
-                showMessage(`Please enter exactly ${selectedNumPlayers} player names.`);
-                return;
-            }
-
-            state.players = playerNames;
-            state.numPlayers = selectedNumPlayers;
-            state.scores = {};
-            state.games = generateGames(state.players);
-            
-            elements.setupSection.classList.add('hidden');
-            elements.gameContainer.classList.remove('hidden');
-            elements.resetButton.classList.remove('hidden');
-            renderGameSchedule();
-            calculateLeaderboard();
-            renderLeaderboard();
-            saveState();
-        }
-
-        function handleResetButton() {
-            if (confirm("Are you sure you want to reset the game? This will clear all data.")) {
-                localStorage.removeItem('padelGameState');
-                window.location.reload();
-            }
-        }
-
-        function handleScoreChange(gameId, team, value) {
-            const scoreA = document.getElementById(`scoreA-${gameId}`).value;
-            const scoreB = document.getElementById(`scoreB-${gameId}`).value;
-            state.scores[gameId] = `${scoreA}:${scoreB}`;
-            calculateLeaderboard();
-            renderLeaderboard();
-            saveState();
-        }
-
-        function handleExportButton() {
-            const gameData = state.games.map(game => {
-                const score = state.scores[game.id] || '0:0';
-                const [scoreA, scoreB] = score.split(':');
-                return {
-                    game_number: game.id,
-                    teamA_players: game.teamA.join(', '),
-                    teamB_players: game.teamB.join(', '),
-                    teamA_result: scoreA,
-                    teamB_result: scoreB,
-                    resting_player: game.resting || 'None'
-                };
-            });
-
-            if (gameData.length === 0) {
-                showMessage("No games to export. Please generate games first.");
-                return;
-            }
-
-            const csvRows = [
-                Object.keys(gameData[0]).join(','),
-                ...gameData.map(row => Object.values(row).map(value => `"${value}"`).join(','))
-            ];
-            const csvString = csvRows.join('\n');
-            const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.setAttribute('href', url);
-            link.setAttribute('download', 'padel_games.csv');
-            link.style.visibility = 'hidden';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
-
-        // --- Supabase Functions ---
-        async function signIn() {
-            const email = elements.authEmail.value;
-            const password = elements.authPassword.value;
-            const { user, error } = await supabase.auth.signInWithPassword({ email, password });
-            if (error) {
-                showMessage(error.message);
-            } else {
-                showMessage("Signed in successfully!");
-            }
-        }
-
-        async function signUp() {
-            const email = elements.authEmail.value;
-            const password = elements.authPassword.value;
-            const { error } = await supabase.auth.signUp({ email, password });
-            if (error) {
-                showMessage(error.message);
-            } else {
-                showMessage("Signed up successfully! Please check your email for confirmation.");
-            }
-        }
-
-        function generateLoadingId() {
-            const uniqueString = state.games.map(g => `${g.id}${state.scores[g.id] || ''}`).join('');
-            return btoa(uniqueString + Date.now()).substring(0, 20);
-        }
-
-        async function saveToDatabase() {
-            const { data: { user } } = await supabase.auth.getSession();
-            if (!user) {
-                showMessage("Please log in to save your game.");
-                return;
-            }
-
-            const loadingId = generateLoadingId();
-            const recordsToInsert = state.games.map(game => {
-                const score = state.scores[game.id];
-                const [scoreA, scoreB] = score ? score.split(':').map(Number) : [null, null];
-
-                return {
-                    user_id: user.id,
-                    loading_id: loadingId,
-                    game_number: game.id,
-                    team_a_players: JSON.stringify(game.teamA),
-                    team_b_players: JSON.stringify(game.teamB),
-                    team_a_result: scoreA,
-                    team_b_result: scoreB,
-                    resting_player: game.resting || null,
-                };
-            });
-
-            const { error } = await supabase
-                .from('padel_games')
-                .insert(recordsToInsert);
-
-            if (error) {
-                showMessage("Error saving game to database: " + error.message);
-            } else {
-                showMessage("Game successfully saved to the database!");
-            }
-        }
-
-        // --- Local Storage Management ---
-        function saveState() {
-            try {
-                localStorage.setItem('padelGameState', JSON.stringify(state));
-            } catch (e) {
-                console.error("Could not save to local storage:", e);
-            }
-        }
-
-        function loadState() {
-            try {
-                const savedState = JSON.parse(localStorage.getItem('padelGameState'));
-                if (savedState) {
-                    Object.assign(state, savedState);
-                    return true;
-                }
-            } catch (e) {
-                console.error("Could not load from local storage:", e);
-            }
-            return false;
-        }
-
-        // --- Initialization --
-        window.onload = function() {
-            // New event listeners
-            elements.authSection.addEventListener('click', e => {
-                if (e.target.id === 'auth-sign-in') signIn();
-                if (e.target.id === 'auth-sign-up') signUp();
-            });
-            elements.saveButton.addEventListener('click', saveToDatabase);
-
-            // Existing event listeners
-            elements.generateButton.addEventListener('click', handleGenerateButton);
-            elements.resetButton.addEventListener('click', handleResetButton);
-            elements.exportButton.addEventListener('click', handleExportButton);
-            elements.modalCloseButton.addEventListener('click', () => {
-                elements.messageModal.classList.add('hidden');
-            });
-            
-            // Check for existing session and hide auth section if user is logged in
-            supabase.auth.getSession().then(({ data: { session } }) => {
-                if (session) {
-                    elements.authSection.classList.add('hidden');
-                }
-            });
-
-            // Restore previous game if available
-            if (loadState()) {
-                elements.playerNamesInput.value = state.players.join(', ');
-                document.querySelector(`input[name="num-players"][value="${state.numPlayers}"]`).checked = true;
-                
-                elements.setupSection.classList.add('hidden');
-                elements.gameContainer.classList.remove('hidden');
-                elements.resetButton.classList.remove('hidden');
-
-                renderGameSchedule();
-                calculateLeaderboard();
-                renderLeaderboard();
-            }
-        };
-    </script>
-</body>
-</html>
+// You may also want to update the UI when the auth state changes
+supabase.auth.onAuthStateChange((event, session) => {
+    if (event === 'SIGNED_IN') {
+        authElements.authSection.classList.add('hidden');
+    } else if (event === 'SIGNED_OUT') {
+        authElements.authSection.classList.remove('hidden');
+    }
+});
