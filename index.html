@@ -565,6 +565,8 @@
         const { data: { user } } = await supabase.auth.getSession();
         if (!user) {
             showMessage("Please log in to save your game.");
+            elements.authSection.classList.remove('hidden'); // This line is the new addition
+            elements.gameContainer.classList.add('hidden'); // This line is the new addition
             return;
         }
 
