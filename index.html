@@ -642,7 +642,7 @@
 
     // --- Initialization ---
 
-    window.onload = function() {
+      window.onload = async function() {
         await checkUserSession(); // Add this line
         elements.generateButton.addEventListener('click', handleGenerateButton);
         elements.resetButton.addEventListener('click', handleResetButton);
