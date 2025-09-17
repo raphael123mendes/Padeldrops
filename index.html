@@ -624,6 +624,8 @@
         elements.generateButton.addEventListener('click', handleGenerateButton);
         elements.resetButton.addEventListener('click', handleResetButton);
         elements.exportButton.addEventListener('click', handleExportButton);
+
+        
         
         // New event listeners
         elements.authSection.addEventListener('click', e => {
@@ -631,6 +633,9 @@
             if (e.target.id === 'auth-sign-up') signUp();
         });
         elements.saveButton.addEventListener('click', saveToDatabase);
+        elements.saveButton.addEventListener('click', () => {
+         saveToDatabase();
+        });
 
         // Restore previous game if available
         if (loadState()) {
