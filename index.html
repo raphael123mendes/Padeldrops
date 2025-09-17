@@ -542,6 +542,30 @@ async function saveToDatabase() {
         return;
     }
 
+async function signIn() {
+        const email = elements.authEmail.value;
+        const password = elements.authPassword.value;
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) {
+            showMessage(error.message);
+        } else {
+            showMessage("Signed in successfully!");
+            elements.authSection.classList.add('hidden');
+        }
+    }
+
+    async function signUp() {
+        const email = elements.authEmail.value;
+        const password = elements.authPassword.value;
+        const { error } = await supabase.auth.signUp({ email, password });
+        if (error) {
+            showMessage(error.message);
+        } else {
+            showMessage("Signed up successfully! Please check your email for confirmation.");
+        }
+    }
+    // End of the moved functions
+    
     const userId = session.user.id;
     const loadingId = generateLoadingId();
     const recordsToInsert = state.games.map(game => {
