@@ -533,85 +533,31 @@
     }
 
    // --- Supabase Functions ---
-async function saveToDatabase() {
-    // Correct way to get the session and user
-    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-    
-    if (sessionError || !session) {
-        showMessage("Please log in to save your game.");
-        return;
-    }
-
-async function signIn() {
-        const email = elements.authEmail.value;
-        const password = elements.authPassword.value;
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) {
-            showMessage(error.message);
-        } else {
-            showMessage("Signed in successfully!");
-            elements.authSection.classList.add('hidden');
-        }
-    }
-
-    async function signUp() {
-        const email = elements.authEmail.value;
-        const password = elements.authPassword.value;
-        const { error } = await supabase.auth.signUp({ email, password });
-        if (error) {
-            showMessage(error.message);
-        } else {
-            showMessage("Signed up successfully! Please check your email for confirmation.");
-        }
-    }
-    // End of the moved functions
-    
-    const userId = session.user.id;
-    const loadingId = generateLoadingId();
-    const recordsToInsert = state.games.map(game => {
-        const score = state.scores[game.id];
-        const [scoreA, scoreB] = score ? score.split(':').map(Number) : [null, null];
-
-        return {
-            user_id: userId,
-            loading_id: loadingId,
-            game_number: game.id,
-            team_a_players: JSON.stringify(game.doubleA),
-            team_b_players: JSON.stringify(game.doubleB),
-            team_a_result: scoreA,
-            team_b_result: scoreB,
-            resting_player: game.resting || null,
-        };
-    });
-
-    const { error } = await supabase
-        .from('padel_games')
-        .insert(recordsToInsert);
-
+// --- Supabase Functions ---
+async function signIn() { // <-- Correct position
+    const email = elements.authEmail.value;
+    const password = elements.authPassword.value;
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
-        showMessage("Error saving game to database: " + error.message);
+        showMessage(error.message);
     } else {
-        showMessage("Game successfully saved to the database!");
+        showMessage("Signed in successfully!");
+        elements.authSection.classList.add('hidden');
     }
 }
 
-    async function signUp() {
-        const email = elements.authEmail.value;
-        const password = elements.authPassword.value;
-        const { error } = await supabase.auth.signUp({ email, password });
-        if (error) {
-            showMessage(error.message);
-        } else {
-            showMessage("Signed up successfully! Please check your email for confirmation.");
-        }
+async function signUp() { // <-- Correct position
+    const email = elements.authEmail.value;
+    const password = elements.authPassword.value;
+    const { error } = await supabase.auth.signUp({ email, password });
+    if (error) {
+        showMessage(error.message);
+    } else {
+        showMessage("Signed up successfully! Please check your email for confirmation.");
     }
+}
 
-    function generateLoadingId() {
-        const uniqueString = state.games.map(g => `${g.id}${state.scores[g.id] || ''}`).join('');
-        return btoa(uniqueString + Date.now()).substring(0, 20);
-    }
-
-    async function saveToDatabase() {
+ async function saveToDatabase() {
         const { data: { user } } = await supabase.auth.getSession();
         if (!user) {
             showMessage("Please log in to save your game.");
@@ -645,6 +591,15 @@ async function signIn() {
             showMessage("Game successfully saved to the database!");
         }
     }
+
+
+
+    function generateLoadingId() {
+        const uniqueString = state.games.map(g => `${g.id}${state.scores[g.id] || ''}`).join('');
+        return btoa(uniqueString + Date.now()).substring(0, 20);
+    }
+
+
 
     // --- Local Storage Management ---
     function saveState() {
