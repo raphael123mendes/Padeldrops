@@ -541,10 +541,27 @@
             showMessage(error.message);
         } else {
             showMessage("Signed in successfully!");
-            elements.authSection.classList.add('hidden');
+            await checkUserSession(); // Add this line
         }
     }
-
+       
+    async function checkUserSession() {
+        const { data: { user } } = await supabase.auth.getSession();
+        if (user) {
+            // User is logged in, hide auth section and show game container
+            elements.authSection.classList.add('hidden');
+            elements.setupSection.classList.remove('hidden'); // Show setup section
+            elements.gameContainer.classList.add('hidden');
+            elements.resetButton.classList.add('hidden');
+        } else {
+            // No user logged in, show auth section
+            elements.authSection.classList.remove('hidden');
+            elements.setupSection.classList.add('hidden');
+            elements.gameContainer.classList.add('hidden');
+            elements.resetButton.classList.add('hidden');
+        }
+    }
+   
     async function signUp() {
         const email = elements.authEmail.value;
         const password = elements.authPassword.value;
@@ -567,6 +584,9 @@
             showMessage("Please log in to save your game.");
             elements.authSection.classList.remove('hidden'); // This line is the new addition
             elements.gameContainer.classList.add('hidden'); // This line is the new addition
+
+            elements.authSection.classList.remove('hidden');
+            elements.gameContainer.classList.add('hidden');
             return;
         }
 
@@ -623,6 +643,7 @@
     // --- Initialization ---
 
     window.onload = function() {
+        await checkUserSession(); // Add this line
         elements.generateButton.addEventListener('click', handleGenerateButton);
         elements.resetButton.addEventListener('click', handleResetButton);
         elements.exportButton.addEventListener('click', handleExportButton);
