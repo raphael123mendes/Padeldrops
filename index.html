@@ -1,3 +1,8 @@
+        // Supabase Initialization
+        // const SUPABASE_URL = 'https://spekrchuvminnlxymxsp.supabase.co';
+       // const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNwZWtyY2h1dm1pbm5seHlteHNwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc5MzAzNDksImV4cCI6MjA3MzUwNjM0OX0.lhgm5mWEP99KVEdxW9mnZHvLPmRqWPk_4x9Kn5OudME';
+       // const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -123,8 +128,8 @@
     </div>
 
     <script>
-        // Supabase Initialization
-        const SUPABASE_URL = 'https://spekrchuvminnlxymxsp.supabase.co';
+        // --- Supabase Configuration ---
+         const SUPABASE_URL = 'https://spekrchuvminnlxymxsp.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNwZWtyY2h1dm1pbm5seHlteHNwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc5MzAzNDksImV4cCI6MjA3MzUwNjM0OX0.lhgm5mWEP99KVEdxW9mnZHvLPmRqWPk_4x9Kn5OudME';
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -176,10 +181,10 @@
                     <div class="flex-grow">
                         <h3 class="font-bold text-lg text-blue-600">Game ${index + 1}</h3>
                         <p class="mt-1 text-gray-700 dark:text-gray-300">
-                            Team A: <span class="font-semibold">${game.doubleA.join(' & ')}</span>
+                            Team A: <span class="font-semibold">${game.teamA.join(' & ')}</span>
                         </p>
                         <p class="text-gray-700 dark:text-gray-300">
-                            Team B: <span class="font-semibold">${game.doubleB.join(' & ')}</span>
+                            Team B: <span class="font-semibold">${game.teamB.join(' & ')}</span>
                         </p>
                         ${game.resting ? `<p class="mt-2 text-sm text-gray-500 dark:text-gray-400">Resting: <span class="font-semibold">${game.resting}</span></p>` : ''}
                     </div>
@@ -212,48 +217,54 @@
         }
 
         // --- Core Logic ---
-        function generateCircularSchedule(players) {
+        function generateGames(players) {
             const n = players.length;
-            if (n < 4) return [];
             const games = [];
+            const allPlayers = [...players];
+            
+            // For 4 players, a single round-robin set
+            if (n === 4) {
+                games.push({ id: 1, teamA: [allPlayers[0], allPlayers[1]], teamB: [allPlayers[2], allPlayers[3]], resting: null });
+                games.push({ id: 2, teamA: [allPlayers[0], allPlayers[2]], teamB: [allPlayers[1], allPlayers[3]], resting: null });
+                games.push({ id: 3, teamA: [allPlayers[0], allPlayers[3]], teamB: [allPlayers[1], allPlayers[2]], resting: null });
+                return games;
+            }
+
+            // For 5 or 6 players, use a circular permutation
             const numRounds = n % 2 === 0 ? n - 1 : n;
-            const fixedPlayer = players[n - 1];
-            const rotatingPlayers = players.slice(0, n - 1);
+            const rotatingPlayers = [...allPlayers];
 
             for (let round = 0; round < numRounds; round++) {
+                const gamePlayers = rotatingPlayers;
+                const half = Math.floor(gamePlayers.length / 2);
+                
+                let restingPlayer = null;
                 if (n % 2 !== 0) {
-                    // For odd number of players, one player rests each round
-                    const restingPlayer = rotatingPlayers[round];
-                    const currentPlayers = rotatingPlayers.filter((p, i) => i !== round);
-                    const half = currentPlayers.length / 2;
-                    for (let i = 0; i < half; i++) {
-                        const game = {
-                            id: games.length + 1,
-                            doubleA: [currentPlayers[i], currentPlayers[currentPlayers.length - 1 - i]],
-                            doubleB: [currentPlayers[i + half], currentPlayers[currentPlayers.length - 1 - half + i]],
-                            resting: restingPlayer
-                        };
-                        games.push(game);
-                    }
-                } else {
-                    // For even number of players, rotate around a fixed player
-                    const doubleA = [fixedPlayer, rotatingPlayers[rotatingPlayers.length - 1]];
-                    const doubleB = [rotatingPlayers[0], rotatingPlayers[rotatingPlayers.length - 2]];
-                    games.push({ id: games.length + 1, doubleA, doubleB, resting: null });
-
-                    const half = rotatingPlayers.length / 2;
-                    for (let i = 1; i < half; i++) {
-                        const game = {
-                            id: games.length + 1,
-                            doubleA: [rotatingPlayers[i], rotatingPlayers[rotatingPlayers.length - 1 - i]],
-                            doubleB: [rotatingPlayers[i + half], rotatingPlayers[rotatingPlayers.length - 1 - half + i]],
-                            resting: null
-                        };
-                        games.push(game);
-                    }
-                    // Rotate the players
-                    rotatingPlayers.unshift(rotatingPlayers.pop());
+                    restingPlayer = gamePlayers[0];
                 }
+                
+                const pairs = [];
+                for (let i = 0; i < half; i++) {
+                    pairs.push([gamePlayers[i], gamePlayers[gamePlayers.length - 1 - i]]);
+                }
+                
+                // Shuffle pairs to ensure teams are varied
+                pairs.sort(() => Math.random() - 0.5);
+
+                for (let i = 0; i < pairs.length; i += 2) {
+                    if (pairs[i+1]) {
+                        games.push({
+                            id: games.length + 1,
+                            teamA: pairs[i],
+                            teamB: pairs[i + 1],
+                            resting: restingPlayer
+                        });
+                    }
+                }
+                
+                // Rotate players for the next round
+                const first = rotatingPlayers.shift();
+                rotatingPlayers.push(first);
             }
             return games;
         }
@@ -271,13 +282,13 @@
                 const [scoreA, scoreB] = score.split(':').map(Number);
                 if (isNaN(scoreA) || isNaN(scoreB)) return;
 
-                game.doubleA.forEach(player => state.leaderboard[player].gamesPlayed++);
-                game.doubleB.forEach(player => state.leaderboard[player].gamesPlayed++);
+                game.teamA.forEach(player => state.leaderboard[player].gamesPlayed++);
+                game.teamB.forEach(player => state.leaderboard[player].gamesPlayed++);
 
                 if (scoreA > scoreB) {
-                    game.doubleA.forEach(player => state.leaderboard[player].gamesWon++);
+                    game.teamA.forEach(player => state.leaderboard[player].gamesWon++);
                 } else if (scoreB > scoreA) {
-                    game.doubleB.forEach(player => state.leaderboard[player].gamesWon++);
+                    game.teamB.forEach(player => state.leaderboard[player].gamesWon++);
                 }
             });
         }
@@ -295,7 +306,7 @@
             state.players = playerNames;
             state.numPlayers = selectedNumPlayers;
             state.scores = {};
-            state.games = generateCircularSchedule(state.players);
+            state.games = generateGames(state.players);
             
             elements.setupSection.classList.add('hidden');
             elements.gameContainer.classList.remove('hidden');
@@ -328,8 +339,8 @@
                 const [scoreA, scoreB] = score.split(':');
                 return {
                     game_number: game.id,
-                    teamA_players: game.doubleA.join(', '),
-                    teamB_players: game.doubleB.join(', '),
+                    teamA_players: game.teamA.join(', '),
+                    teamB_players: game.teamB.join(', '),
                     teamA_result: scoreA,
                     teamB_result: scoreB,
                     resting_player: game.resting || 'None'
@@ -401,8 +412,8 @@
                     user_id: user.id,
                     loading_id: loadingId,
                     game_number: game.id,
-                    team_a_players: JSON.stringify(game.doubleA),
-                    team_b_players: JSON.stringify(game.doubleB),
+                    team_a_players: JSON.stringify(game.teamA),
+                    team_b_players: JSON.stringify(game.teamB),
                     team_a_result: scoreA,
                     team_b_result: scoreB,
                     resting_player: game.resting || null,
