@@ -514,98 +514,80 @@
             document.body.removeChild(link);
         }
 
-        async function handleSupabaseButton() {
-            if (state.games.length === 0) {
-                showMessage("No games to save. Please generate a game schedule first.");
-                return;
-            }
+       // Function to handle saving game data to Supabase
+async function handleSupabaseButton() {
+    if (state.games.length === 0) {
+        showMessage("No games to save. Please generate a game schedule first.");
+        return;
+    }
 
-            const now = new Date();
-            const playersString = state.players.sort().join('');
-            const scoreSum = Object.values(state.scores).reduce((sum, score) => {
-                const [scoreA, scoreB] = score.split(':').map(Number);
-                return sum + scoreA + scoreB;
-            }, 0);
-            const gamedayId = `${playersString}-${now.toISOString().slice(0, 10)}-${scoreSum}`;
+    const now = new Date();
+    const playersString = state.players.sort().join('');
+    const scoreSum = Object.values(state.scores).reduce((sum, score) => {
+        const [scoreA, scoreB] = score.split(':').map(Number);
+        return sum + scoreA + scoreB;
+    }, 0);
+    const gamedayId = `${playersString}-${now.toISOString().slice(0, 10)}-${scoreSum}`;
 
-            const recordsToInsert = [];
-            state.games.forEach(game => {
-                const gameScore = state.scores[game.id] || '0:0';
-                const [scoreA, scoreB] = gameScore.split(':').map(Number);
-                
-                const playersPoints = {};
-                state.players.forEach(p => {
-                    // Normalize player names for SQL column names (e.g., replace spaces with underscores)
-                    const normalizedName = p.replace(/\s+/g, '_');
-                    playersPoints[`${normalizedName}_points`] = 0;
-                });
-                
-                if (gameScore) {
-                    game.doubleA.forEach(p => {
-                        const normalizedName = p.replace(/\s+/g, '_');
-                        playersPoints[`${normalizedName}_points`] += scoreA;
-                    });
-                    game.doubleB.forEach(p => {
-                        const normalizedName = p.replace(/\s+/g, '_');
-                        playersPoints[`${normalizedName}_points`] += scoreB;
-                    });
-                }
-
-                recordsToInsert.push({
-                    game_id: game.id,
-                    gameday_id: gamedayId,
-                    game_date: now.toLocaleDateString('en-CA'), // YYYY-MM-DD format
-                    game_time: now.toLocaleTimeString(),
-                    double_1_player_a: game.doubleA[0],
-                    double_1_player_b: game.doubleA[1],
-                    double_2_player_a: game.doubleB[0],
-                    double_2_player_b: game.doubleB[1],
-                    resting_player: game.resting || null,
-                    score: gameScore,
-                    double_1_points: scoreA,
-                    double_2_points: scoreB,
-                    ...playersPoints
-                });
+    const recordsToInsert = [];
+    state.games.forEach(game => {
+        const gameScore = state.scores[game.id] || '0:0';
+        const [scoreA, scoreB] = gameScore.split(':').map(Number);
+        
+        // Calculate player points based on game score
+        const playersPoints = {};
+        if (gameScore) {
+            game.doubleA.forEach(p => {
+                playersPoints[p] = (playersPoints[p] || 0) + scoreA;
             });
-
-            try {
-                const { data, error } = await supabase
-                    .from('padel_games')
-                    .insert(recordsToInsert);
-
-                if (error) {
-                    console.error('Supabase insert error:', error.message);
-                    showMessage(`Error saving to database: ${error.message}`);
-                } else {
-                    console.log('Data saved successfully!', data);
-                    showMessage("Game data saved successfully to Supabase!");
-                }
-            } catch (e) {
-                console.error('Unexpected error:', e);
-                showMessage("An unexpected error occurred while saving.");
-            }
+            game.doubleB.forEach(p => {
+                playersPoints[p] = (playersPoints[p] || 0) + scoreB;
+            });
         }
+        
+        // Map player scores to fixed database columns
+        const record = {
+            game_id: game.id,
+            gameday_id: gamedayId,
+            game_date: now.toLocaleDateString('en-CA'), // YYYY-MM-DD format
+            game_time: now.toLocaleTimeString(),
+            double_1_player_a: game.doubleA[0],
+            double_1_player_b: game.doubleA[1],
+            double_2_player_a: game.doubleB[0],
+            double_2_player_b: game.doubleB[1],
+            resting_player: game.resting || null,
+            score: gameScore,
+            double_1_points: scoreA,
+            double_2_points: scoreB,
+        };
 
-        function saveState() {
-            try {
-                localStorage.setItem('padelGameState', JSON.stringify(state));
-            } catch (e) {
-                console.error("Could not save to local storage:", e);
+        // Assign points based on player order, up to 5 players
+        state.players.forEach((player, index) => {
+            if (index < 5) {
+                record[`player${index + 1}_points`] = playersPoints[player] || 0;
             }
-        }
+        });
+        
+        recordsToInsert.push(record);
+    });
 
-        function loadState() {
-            try {
-                const savedState = JSON.parse(localStorage.getItem('padelGameState'));
-                if (savedState) {
-                    Object.assign(state, savedState);
-                    return true;
-                }
-            } catch (e) {
-                console.error("Could not load from local storage:", e);
-            }
-            return false;
+    try {
+        const { data, error } = await supabase
+            .from('padel_games')
+            .insert(recordsToInsert);
+
+        if (error) {
+            console.error('Supabase insert error:', error.message);
+            showMessage(`Error saving to database: ${error.message}`);
+        } else {
+            console.log('Data saved successfully!', data);
+            showMessage("Game data saved successfully to Supabase!");
         }
+    } catch (e) {
+        console.error('Unexpected error:', e);
+        showMessage("An unexpected error occurred while saving.");
+    }
+}
 
         // --- Initialization ---
 
