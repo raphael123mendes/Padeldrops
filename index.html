@@ -13,8 +13,8 @@
         body {
             font-family: 'Inter', sans-serif;
         }
-        input[type="number"]::-webkit-inner-spin-button,
-        input[type="number"]::-webkit-outer-spin-button {
+        input[type="number"]::-webkit-inner-spin-button, 
+        input[type="number"]::-webkit-outer-spin-button { 
             -webkit-appearance: none;
             margin: 0;
         }
@@ -43,7 +43,8 @@
 
     <div id="custom-modal" class="modal hidden">
         <div class="modal-content bg-white dark:bg-gray-800 p-8 rounded-xl shadow-2xl">
-            <p id="modal-message" class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-6">Are you sure you want to reset the game? This will clear all data.</p>
+            <p id="modal-message" class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-6">Are you sure you want to reset the game?
+                This will clear all data.</p>
             <div class="flex justify-center space-x-4">
                 <button id="modal-confirm" class="px-6 py-2 rounded-full text-white font-bold bg-red-600 hover:bg-red-700 transition-colors duration-200">Confirm</button>
                 <button id="modal-cancel" class="px-6 py-2 rounded-full text-gray-800 dark:text-gray-200 bg-gray-300 hover:bg-gray-400 transition-colors duration-200">Cancel</button>
@@ -57,72 +58,81 @@
             <h1 class="text-3xl sm:text-4xl font-extrabold text-gray-900 dark:text-gray-100">
                 Padel Manager
             </h1>
+           
             <p class="mt-2 text-base sm:text-lg text-gray-600 dark:text-gray-400">
                 Organize and score your Padel games with ease.
             </p>
         </header>
-
+        
         <div class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 mb-8 justify-end">
             <button id="reset-button"
                 class="w-full sm:w-auto px-6 py-3 rounded-full text-white font-bold bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 transition-all duration-200 shadow-md transform hover:scale-105 hidden">
+       
                 Reset Game
             </button>
         </div>
 
         <div id="setup-section" class="bg-gray-50 dark:bg-gray-700 p-4 sm:p-6 rounded-xl shadow-lg transition-colors duration-300">
-            <h2 class="text-xl sm:text-2xl font-bold mb-4 text-gray-900 dark:text-gray-100">1. Player Setup</h2>
+            <h2 class="text-xl sm:text-2xl font-bold mb-4 text-gray-900 dark:text-gray-100">1.
+                Player Setup</h2>
             <div id="message-box" class="hidden bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-4 rounded-lg" role="alert">
                 <p id="message-content"></p>
             </div>
             <div class="mb-4">
                 <label class="block text-gray-700 dark:text-gray-300 mb-2">Number of Players</label>
+             
                 <div class="flex space-x-4">
                     <label class="inline-flex items-center">
                         <input type="radio" class="form-radio text-blue-600 focus:ring-blue-500 rounded-full" name="num-players" value="4" checked>
                         <span class="ml-2 text-gray-900 dark:text-gray-100">4 Players</span>
+             
                     </label>
                     <label class="inline-flex items-center">
                         <input type="radio" class="form-radio text-blue-600 focus:ring-blue-500 rounded-full" name="num-players" value="5">
                         <span class="ml-2 text-gray-900 dark:text-gray-100">5 Players</span>
+            
                     </label>
                 </div>
             </div>
             <div class="mb-6">
                 <label for="player-names" class="block text-gray-700 dark:text-gray-300 mb-2">Player Names (comma separated)</label>
                 <input type="text" id="player-names" placeholder="e.g., John, Jane, Mike, Emily"
+    
                     class="w-full px-4 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 transition-colors duration-200">
             </div>
             <div class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
                 <button id="generate-button"
-                    class="w-full px-6 py-3 rounded-full text-white font-bold bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200 shadow-md transform hover:scale-105">
+                    class="w-full px-6 
+                    py-3 rounded-full text-white font-bold bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200 shadow-md transform hover:scale-105">
                     Generate Games
                 </button>
             </div>
         </div>
 
         <div id="game-container" class="mt-8 hidden">
+      
             <section class="bg-gray-50 dark:bg-gray-700 p-4 sm:p-6 rounded-xl shadow-lg transition-colors duration-300 mb-8">
-                <h2 class="text-xl sm:text-2xl font-bold mb-4 text-gray-900 dark:text-gray-100">2. Game Schedule</h2>
+                <h2 class="text-xl sm:text-2xl font-bold mb-4 text-gray-900 dark:text-gray-100">2.
+                    Game Schedule</h2>
                 <div id="game-schedule" class="space-y-4">
                     </div>
             </section>
 
             <section class="bg-gray-50 dark:bg-gray-700 p-4 sm:p-6 rounded-xl shadow-lg transition-colors duration-300 mb-8">
-                <h2 class="text-xl sm:text-2xl font-bold mb-4 text-gray-900 dark:text-gray-100">3. Live Leaderboard</h2>
+                <h2 class="text-xl sm:text-2xl font-bold mb-4 text-gray-900 dark:text-gray-100">3.
+                    Live Leaderboard</h2>
                 <div id="leaderboard" class="space-y-6">
                     </div>
             </section>
 
             <section class="bg-gray-50 dark:bg-gray-700 p-4 sm:p-6 rounded-xl shadow-lg transition-colors duration-300">
-                <h2 class="text-xl sm:text-2xl font-bold mb-4 text-gray-900 dark:text-gray-100">4. Export Data</h2>
-                <div class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 justify-center">
+                <h2 class="text-xl sm:text-2xl font-bold mb-4 text-gray-900 dark:text-gray-100">4.
+                    Export Data</h2>
+                <div class="flex justify-center">
                     <button id="export-button"
                         class="w-full px-6 py-3 rounded-full text-white font-bold bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 transition-all duration-200 shadow-md transform hover:scale-105">
+                     
                         Export to CSV
-                    </button>
-                    <button id="supabase-button"
-                        class="w-full px-6 py-3 rounded-full text-white font-bold bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all duration-200 shadow-md transform hover:scale-105">
-                        Save to Supabase
                     </button>
                 </div>
             </section>
@@ -130,13 +140,9 @@
     </div>
 
     <script>
-    // --- Supabase Configuration ---
-    const SUPABASE_URL = 'https://spekrchuvminnlxymxsp.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNwZWtyY2h1dm1pbm5seHlteHNwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc5MzAzNDksImV4cCI6MjA3MzUwNjM0OX0.lhgm5mWEP99KVEdxW9mnZHvLPmRqWPk_4x9Kn5OudME';
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
         const state = {
-            players: [],
+            players: 
+                [],
             numPlayers: 0,
             games: [],
             scores: {},
@@ -144,6 +150,7 @@
                 players: [],
                 doubles: []
             }
+  
         };
 
         const elements = {
@@ -153,23 +160,30 @@
             generateButton: document.getElementById('generate-button'),
             resetButton: document.getElementById('reset-button'),
             gameScheduleDiv: document.getElementById('game-schedule'),
+            
             leaderboardDiv: document.getElementById('leaderboard'),
             exportButton: document.getElementById('export-button'),
-            supabaseButton: document.getElementById('supabase-button'),
             numPlayersRadios: document.querySelectorAll('input[name="num-players"]'),
             messageBox: document.getElementById('message-box'),
             messageContent: document.getElementById('message-content'),
             customModal: document.getElementById('custom-modal'),
             modalConfirm: document.getElementById('modal-confirm'),
             modalCancel: document.getElementById('modal-cancel'),
+        
         };
+
+        
+    // --- Supabase Configuration ---
+    const SUPABASE_URL = 'https://spekrchuvminnlxymxsp.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNwZWtyY2h1dm1pbm5seHlteHNwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc5MzAzNDksImV4cCI6MjA3MzUwNjM0OX0.lhgm5mWEP99KVEdxW9mnZHvLPmRqWPk_4x9Kn5OudME';
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         // Reusable message box function
         function showMessage(message) {
             elements.messageContent.textContent = message;
             elements.messageBox.classList.remove('hidden');
         }
-
+        
         // Show/hide custom modal
         function showModal() {
             elements.customModal.classList.remove('hidden');
@@ -191,13 +205,14 @@
             const shuffledPairings = pairings.sort(() => Math.random() - 0.5);
             state.games = [];
             // Change the loop to generate 15 games for 5 rounds
-            for (let i = 0; i < 15; i++) {
+            for (let i = 0; i < 15; i++) { 
                 const game = shuffledPairings[i % 3];
                 state.games.push({
                     id: state.games.length + 1,
                     doubleA: game[0],
                     doubleB: game[1],
                     resting: null,
+              
                     round: Math.floor(i / 3) + 1
                 });
             }
@@ -209,15 +224,18 @@
                 { doubleA: [1, 2], doubleB: [3, 4], resting: 5 },
                 { doubleA: [2, 3], doubleB: [4, 5], resting: 1 },
                 { doubleA: [1, 4], doubleB: [3, 5], resting: 2 },
-                { doubleA: [1, 5], doubleB: [2, 4], resting: 3 },
+                { doubleA: [1, 5], doubleB: [2, 
+                    4], resting: 3 },
                 { doubleA: [1, 3], doubleB: [2, 5], resting: 4 },
                 { doubleA: [2, 3], doubleB: [1, 4], resting: 5 },
                 { doubleA: [2, 4], doubleB: [3, 5], resting: 1 },
-                { doubleA: [3, 4], doubleB: [1, 5], resting: 2 },
+                { doubleA: [3, 4], doubleB: [1, 
+                    5], resting: 2 },
                 { doubleA: [1, 2], doubleB: [4, 5], resting: 3 },
                 { doubleA: [2, 3], doubleB: [1, 5], resting: 4 },
                 { doubleA: [1, 3], doubleB: [2, 4], resting: 5 },
-                { doubleA: [3, 4], doubleB: [2, 5], resting: 1 },
+                { doubleA: [3, 4], doubleB: [2, 
+                    5], resting: 1 },
                 { doubleA: [1, 3], doubleB: [4, 5], resting: 2 },
                 { doubleA: [1, 4], doubleB: [2, 5], resting: 3 },
                 { doubleA: [1, 2], doubleB: [3, 5], resting: 4 }
@@ -227,6 +245,7 @@
                     id: index + 1,
                     doubleA: [players[game.doubleA[0] - 1], players[game.doubleA[1] - 1]],
                     doubleB: [players[game.doubleB[0] - 1], players[game.doubleB[1] - 1]],
+   
                     resting: players[game.resting - 1],
                 };
             });
@@ -243,36 +262,41 @@
                 if (gameScore) {
                     const [scoreA, scoreB] = gameScore.split(':').map(Number);
                     if (!isNaN(scoreA) && !isNaN(scoreB)) {
+             
+            
                         // Update individual player stats
                         game.doubleA.forEach(p => {
                             playerStats[p].points += scoreA;
+     
                             playerStats[p].gamesPlayed++;
                             playerStats[p].pointsWon += scoreA;
                             playerStats[p].pointsLost += scoreB;
+                 
                         });
                         game.doubleB.forEach(p => {
                             playerStats[p].points += scoreB;
                             playerStats[p].gamesPlayed++;
+         
                             playerStats[p].pointsWon += scoreB;
                             playerStats[p].pointsLost += scoreA;
                         });
                         // Update doubles stats
                         const doubleAKey = [...game.doubleA].sort().join(',');
-                        const doubleBKey = [...game.doubleB].sort().join(',');
-
+            const doubleBKey = [...game.doubleB].sort().join(',');
+                        
                         if (!doubleStats[doubleAKey]) doubleStats[doubleAKey] = { points: 0, gamesPlayed: 0, pointsWon: 0, pointsLost: 0 };
-                        if (!doubleStats[doubleBKey]) doubleStats[doubleBKey] = { points: 0, gamesPlayed: 0, pointsWon: 0, pointsLost: 0 };
+            if (!doubleStats[doubleBKey]) doubleStats[doubleBKey] = { points: 0, gamesPlayed: 0, pointsWon: 0, pointsLost: 0 };
 
                         doubleStats[doubleAKey].points += scoreA;
                         doubleStats[doubleAKey].gamesPlayed++;
-                        doubleStats[doubleAKey].pointsWon += scoreA;
+            doubleStats[doubleAKey].pointsWon += scoreA;
                         doubleStats[doubleAKey].pointsLost += scoreB;
-
+                        
                         doubleStats[doubleBKey].points += scoreB;
                         doubleStats[doubleBKey].gamesPlayed++;
                         doubleStats[doubleBKey].pointsWon += scoreB;
                         doubleStats[doubleBKey].pointsLost += scoreA;
-                    }
+            }
                 }
             });
             // Calculate indexes
@@ -281,6 +305,7 @@
                 return {
                     name,
                     points: stats.points,
+    
                     gamesPlayed: stats.gamesPlayed,
                     pointsPerGameIndex: stats.gamesPlayed > 0 ? (stats.points / stats.gamesPlayed).toFixed(2) : 'N/A'
                 };
@@ -292,10 +317,12 @@
                 const [p1, p2] = doubleKey.split(',');
                 return {
                     players: `${p1} & ${p2}`,
+ 
                     points: stats.points,
                     gamesPlayed: stats.gamesPlayed,
                     pointsWonPerGameIndex: stats.gamesPlayed > 0 ? (stats.pointsWon / stats.gamesPlayed).toFixed(2) : 'N/A',
-                    positivePointsPerGameIndex: stats.gamesPlayed > 0 ? ((stats.pointsWon - stats.pointsLost) / stats.gamesPlayed).toFixed(2) : 'N/A'
+                    positivePointsPerGameIndex: stats.gamesPlayed > 0 ? ((stats.pointsWon - stats.pointsLost) / stats.gamesPlayed).toFixed(2) 
+            : 'N/A'
                 };
             }).sort((a, b) => b.points - a.points);
             // Sort by points
@@ -311,30 +338,36 @@
             state.games.forEach(game => {
                 const gameDiv = document.createElement('div');
                 gameDiv.className = "flex flex-col sm:flex-row items-center justify-between bg-white dark:bg-gray-800 p-4 rounded-xl shadow-inner transition-colors duration-300";
-
+                
                 let gameText = `<div class="font-semibold text-base sm:text-lg text-gray-900 dark:text-gray-100 mb-2 sm:mb-0 text-center sm:text-left">
-                                <span class="text-blue-600 font-bold">Game ${game.id}</span>: ${game.doubleA.join(' & ')} <span class="text-gray-400 mx-2">vs</span> ${game.doubleB.join(' & ')}
+      
+                               <span class="text-blue-600 font-bold">Game ${game.id}</span>: ${game.doubleA.join(' & ')} <span class="text-gray-400 mx-2">vs</span> ${game.doubleB.join(' & ')}
                                 </div>`;
                 if (game.resting) {
+        
                     gameText += `<div class="text-sm text-gray-500 dark:text-gray-400 text-center sm:text-left">(${game.resting} resting)</div>`;
                 }
 
                 const scoreInputDiv = document.createElement('div');
                 scoreInputDiv.className = "flex space-x-2 items-center justify-center sm:justify-end mt-2 sm:mt-0";
-                scoreInputDiv.innerHTML = `
-                    <input type="number"
-                        id="scoreA-${game.id}"
-                        placeholder="0"
-                        class="w-16 px-2 py-1 text-center border rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            scoreInputDiv.innerHTML = `
+                    <input type="number" 
+                        id="scoreA-${game.id}" 
+                        placeholder="0" 
+                        class="w-16 px-2 
+                        py-1 text-center border rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500" 
                         oninput="handleScoreInput(${game.id})"
                         value="${state.scores[game.id] ? state.scores[game.id].split(':')[0] : ''}">
                     <span class="text-lg">:</span>
-                    <input type="number"
-                        id="scoreB-${game.id}"
-                        placeholder="0"
-                        class="w-16 px-2 py-1 text-center border rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                
+                    <input type="number" 
+                        id="scoreB-${game.id}" 
+                        placeholder="0" 
+                        class="w-16 px-2 py-1 text-center border rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500" 
+       
                         oninput="handleScoreInput(${game.id})"
-                        value="${state.scores[game.id] ? state.scores[game.id].split(':')[1] : ''}">
+                        value="${state.scores[game.id] ?
+                            state.scores[game.id].split(':')[1] : ''}">
                 `;
 
                 gameDiv.innerHTML = gameText;
@@ -344,64 +377,82 @@
         }
 
         function renderLeaderboard() {
+  
             elements.leaderboardDiv.innerHTML = '';
 
             // Individual Player Leaderboard
             const playersTableHtml = `
                 <h3 class="text-lg sm:text-xl font-semibold mb-2 text-gray-900 dark:text-gray-100">Individual Players</h3>
                 <div class="overflow-x-auto rounded-lg shadow-md">
+                
                     <table class="min-w-full bg-white dark:bg-gray-800 text-sm md:text-base">
                         <thead>
                             <tr class="text-left text-gray-700 dark:text-gray-300 bg-gray-200 dark:bg-gray-700">
-                                <th class="p-4 rounded-tl-lg">Rank</th>
+                                <th class="p-4 
+                                    rounded-tl-lg">Rank</th>
                                 <th class="p-4">Name</th>
                                 <th class="p-4">Points</th>
-                                <th class="p-4">Games Played</th>
+                                <th class="p-4">Games 
+                                    Played</th>
                                 <th class="p-4 rounded-tr-lg">Points/Game</th>
                             </tr>
                         </thead>
+              
                         <tbody>
                             ${state.leaderboard.players.map((player, index) => `
-                                <tr class="${index % 2 === 0 ? 'bg-white dark:bg-gray-800' : 'bg-gray-50 dark:bg-gray-700'}">
+                                <tr class="${index % 2 === 0 ?
+                                    'bg-white dark:bg-gray-800' : 'bg-gray-50 dark:bg-gray-700'}">
                                     <td class="p-4 font-bold text-gray-900 dark:text-gray-100">${index + 1}</td>
                                     <td class="p-4">${player.name}</td>
+                 
                                     <td class="p-4">${player.points}</td>
                                     <td class="p-4">${player.gamesPlayed}</td>
                                     <td class="p-4">${player.pointsPerGameIndex}</td>
+      
                                 </tr>
                             `).join('')}
                         </tbody>
                     </table>
+  
                 </div>
             `;
             elements.leaderboardDiv.innerHTML += playersTableHtml;
-
+            
             // Doubles Leaderboard
             const doublesTableHtml = `
-                <h3 class="text-lg sm:text-xl font-semibold mt-6 mb-2 text-gray-900 dark:text-gray-100">Doubles</h3>
+                <h3 class="text-lg sm:text-xl 
+                    font-semibold mt-6 mb-2 text-gray-900 dark:text-gray-100">Doubles</h3>
                 <div class="overflow-x-auto rounded-lg shadow-md">
                     <table class="min-w-full bg-white dark:bg-gray-800 text-sm md:text-base">
                         <thead>
+                            
                             <tr class="text-left text-gray-700 dark:text-gray-300 bg-gray-200 dark:bg-gray-700">
                                 <th class="p-4 rounded-tl-lg">Rank</th>
                                 <th class="p-4">Players</th>
+                            
                                 <th class="p-4">Points</th>
                                 <th class="p-4">Games Played</th>
                                 <th class="p-4">Points Won/Game</th>
+                           
                                 <th class="p-4 rounded-tr-lg">+/- Index</th>
                             </tr>
                         </thead>
                         <tbody>
+                
                             ${state.leaderboard.doubles.map((double, index) => `
-                                <tr class="${index % 2 === 0 ? 'bg-white dark:bg-gray-800' : 'bg-gray-50 dark:bg-gray-700'}">
+                                <tr class="${index % 2 === 0 ?
+                                    'bg-white dark:bg-gray-800' : 'bg-gray-50 dark:bg-gray-700'}">
                                     <td class="p-4 font-bold text-gray-900 dark:text-gray-100">${index + 1}</td>
                                     <td class="p-4">${double.players}</td>
+                 
                                     <td class="p-4">${double.points}</td>
                                     <td class="p-4">${double.gamesPlayed}</td>
                                     <td class="p-4">${double.pointsWonPerGameIndex}</td>
+      
                                     <td class="p-4">${double.positivePointsPerGameIndex}</td>
                                 </tr>
                             `).join('')}
+         
                         </tbody>
                     </table>
                 </div>
@@ -409,7 +460,82 @@
             elements.leaderboardDiv.innerHTML += doublesTableHtml;
         }
 
-        // --- Event Handlers & State Management ---
+        // --- Event Handlers & State Management 
+        ---
+
+        async function handleSupabaseButton() {
+            if (state.games.length === 0) {
+                showMessage("No games to save. Please generate a game schedule first.");
+                return;
+            }
+
+            const now = new Date();
+            const playersString = state.players.sort().join('');
+            const scoreSum = Object.values(state.scores).reduce((sum, score) => {
+                const [scoreA, scoreB] = score.split(':').map(Number);
+                return sum + scoreA + scoreB;
+            }, 0);
+            const gamedayId = `${playersString}-${now.toISOString().slice(0, 10)}-${scoreSum}`;
+
+            const recordsToInsert = [];
+            state.games.forEach(game => {
+                const gameScore = state.scores[game.id] || '0:0';
+                const [scoreA, scoreB] = gameScore.split(':').map(Number);
+                
+                // Calculate player points based on game score
+                const playersPoints = {};
+                if (gameScore) {
+                    game.doubleA.forEach(p => {
+                        playersPoints[p] = (playersPoints[p] || 0) + scoreA;
+                    });
+                    game.doubleB.forEach(p => {
+                        playersPoints[p] = (playersPoints[p] || 0) + scoreB;
+                    });
+                }
+                
+                // Map player scores to fixed database columns
+                const record = {
+                    game_id: game.id,
+                    gameday_id: gamedayId,
+                    game_date: now.toLocaleDateString('en-CA'), // YYYY-MM-DD format
+                    game_time: now.toLocaleTimeString(),
+                    double_1_player_a: game.doubleA[0],
+                    double_1_player_b: game.doubleA[1],
+                    double_2_player_a: game.doubleB[0],
+                    double_2_player_b: game.doubleB[1],
+                    resting_player: game.resting || null,
+                    score: gameScore,
+                    double_1_points: scoreA,
+                    double_2_points: scoreB,
+                };
+
+                // Assign points based on player order, up to 5 players
+                state.players.forEach((player, index) => {
+                    if (index < 5) {
+                        record[`player${index + 1}_points`] = playersPoints[player] || 0;
+                    }
+                });
+                
+                recordsToInsert.push(record);
+            });
+
+            try {
+                const { data, error } = await supabase
+                    .from('padel_games')
+                    .insert(recordsToInsert);
+
+                if (error) {
+                    console.error('Supabase insert error:', error.message);
+                    showMessage(`Error saving to database: ${error.message}`);
+                } else {
+                    console.log('Data saved successfully!', data);
+                    showMessage("Game data saved successfully to Supabase!");
+                }
+            } catch (e) {
+                console.error('Unexpected error:', e);
+                showMessage("An unexpected error occurred while saving.");
+            }
+        }
 
         function handleScoreInput(gameId) {
             const scoreA = document.getElementById(`scoreA-${gameId}`).value;
@@ -464,25 +590,26 @@
         elements.modalCancel.addEventListener('click', () => {
             hideModal();
         });
-
         function handleExportButton() {
             let csvContent = "data:text/csv;charset=utf-8,";
-            // Headers will now use the actual player names
-            const headers = ["Game ID", "Date", "Time", "Double 1 Player A", "Double 1 Player B", "Double 2 Player A", "Double 2 Player B", "Resting Player", "Score", "Double 1 Points", "Double 2 Points", ...state.players.map(p => `${p}_points`)];
+            // Headers
+            const headers = ["Game ID", "Date", "Time", "Double 1 Player A", "Double 1 Player B", "Double 2 Player A", "Double 2 Player B", "Resting Player", "Score", "Double 1 Points", "Double 2 Points", ...state.players.map(p => `${p} Pts`)];
             csvContent += headers.join(',') + "\n";
-
+            
             const gameStats = {};
             state.games.forEach(game => {
                 const gameScore = state.scores[game.id];
                 const [scoreA, scoreB] = gameScore ? gameScore.split(':').map(Number) : [0, 0];
-
+                
                 const playersPoints = {};
+          
                 state.players.forEach(p => playersPoints[p] = 0);
                 if(gameScore) {
                     game.doubleA.forEach(p => playersPoints[p] += scoreA);
                     game.doubleB.forEach(p => playersPoints[p] += scoreB);
                 }
 
+         
                 gameStats[game.id] = { scoreA, scoreB, playersPoints };
             });
             // Data rows
@@ -491,16 +618,19 @@
                 const gameData = gameStats[game.id];
                 const row = [
                     game.id,
+      
                     now.toLocaleDateString(),
                     now.toLocaleTimeString(),
                     game.doubleA[0],
                     game.doubleA[1],
                     game.doubleB[0],
+      
                     game.doubleB[1],
                     game.resting || '',
                     state.scores[game.id] || '0:0',
                     gameData.scoreA,
                     gameData.scoreB,
+  
                     ...state.players.map(p => gameData.playersPoints[p] || 0)
                 ];
                 csvContent += row.map(e => `"${e}"`).join(',') + "\n";
@@ -514,80 +644,26 @@
             document.body.removeChild(link);
         }
 
-       // Function to handle saving game data to Supabase
-async function handleSupabaseButton() {
-    if (state.games.length === 0) {
-        showMessage("No games to save. Please generate a game schedule first.");
-        return;
-    }
-
-    const now = new Date();
-    const playersString = state.players.sort().join('');
-    const scoreSum = Object.values(state.scores).reduce((sum, score) => {
-        const [scoreA, scoreB] = score.split(':').map(Number);
-        return sum + scoreA + scoreB;
-    }, 0);
-    const gamedayId = `${playersString}-${now.toISOString().slice(0, 10)}-${scoreSum}`;
-
-    const recordsToInsert = [];
-    state.games.forEach(game => {
-        const gameScore = state.scores[game.id] || '0:0';
-        const [scoreA, scoreB] = gameScore.split(':').map(Number);
-        
-        // Calculate player points based on game score
-        const playersPoints = {};
-        if (gameScore) {
-            game.doubleA.forEach(p => {
-                playersPoints[p] = (playersPoints[p] || 0) + scoreA;
-            });
-            game.doubleB.forEach(p => {
-                playersPoints[p] = (playersPoints[p] || 0) + scoreB;
-            });
-        }
-        
-        // Map player scores to fixed database columns
-        const record = {
-            game_id: game.id,
-            gameday_id: gamedayId,
-            game_date: now.toLocaleDateString('en-CA'), // YYYY-MM-DD format
-            game_time: now.toLocaleTimeString(),
-            double_1_player_a: game.doubleA[0],
-            double_1_player_b: game.doubleA[1],
-            double_2_player_a: game.doubleB[0],
-            double_2_player_b: game.doubleB[1],
-            resting_player: game.resting || null,
-            score: gameScore,
-            double_1_points: scoreA,
-            double_2_points: scoreB,
-        };
-
-        // Assign points based on player order, up to 5 players
-        state.players.forEach((player, index) => {
-            if (index < 5) {
-                record[`player${index + 1}_points`] = playersPoints[player] || 0;
+        function saveState() {
+            try {
+                localStorage.setItem('padelGameState', JSON.stringify(state));
+            } catch (e) {
+                console.error("Could not save to local storage:", e);
             }
-        });
-        
-        recordsToInsert.push(record);
-    });
-
-    try {
-        const { data, error } = await supabase
-            .from('padel_games')
-            .insert(recordsToInsert);
-
-        if (error) {
-            console.error('Supabase insert error:', error.message);
-            showMessage(`Error saving to database: ${error.message}`);
-        } else {
-            console.log('Data saved successfully!', data);
-            showMessage("Game data saved successfully to Supabase!");
         }
-    } catch (e) {
-        console.error('Unexpected error:', e);
-        showMessage("An unexpected error occurred while saving.");
-    }
-}
+
+        function loadState() {
+            try {
+                const savedState = JSON.parse(localStorage.getItem('padelGameState'));
+            if (savedState) {
+                    Object.assign(state, savedState);
+            return true;
+                }
+            } catch (e) {
+                console.error("Could not load from local storage:", e);
+            }
+            return false;
+        }
 
         // --- Initialization ---
 
@@ -595,15 +671,12 @@ async function handleSupabaseButton() {
             elements.generateButton.addEventListener('click', handleGenerateButton);
             elements.resetButton.addEventListener('click', handleResetButton);
             elements.exportButton.addEventListener('click', handleExportButton);
-            if (elements.supabaseButton) {
-                elements.supabaseButton.addEventListener('click', handleSupabaseButton);
-            }
-
+            
             // Restore previous game if available
             if (loadState()) {
                 elements.playerNamesInput.value = state.players.join(', ');
-                document.querySelector(`input[name="num-players"][value="${state.numPlayers}"]`).checked = true;
-
+            document.querySelector(`input[name="num-players"][value="${state.numPlayers}"]`).checked = true;
+                
                 elements.setupSection.classList.add('hidden');
                 elements.gameContainer.classList.remove('hidden');
                 elements.resetButton.classList.remove('hidden');
