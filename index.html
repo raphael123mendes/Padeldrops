@@ -571,24 +571,23 @@
                 recordsToInsert.push(record);
             });
 
-try {
-    const { data, error } = await supabase
-        .from('padel_games')
-        .insert(recordsToInsert)
-        .select(); // 👈 Add .select() here
+            try {
+                const { data, error } = await supabase
+                    .from('padel_games')
+                    .insert(recordsToInsert);
 
-    if (error) {
-        console.error('Supabase insert error:', error.message);
-        showMessage(`Error saving to database: ${error.message}`);
-    } else {
-        console.log('Data saved successfully!', data);
-        showMessage("Game data saved successfully to Supabase!");
-    }
-} catch (e) {
-    console.error('Unexpected error:', e);
-    showMessage("An unexpected error occurred while saving.");
-}}
-        
+                if (error) {
+                    console.error('Supabase insert error:', error.message);
+                    showMessage(`Error saving to database: ${error.message}`);
+                } else {
+                    console.log('Data saved successfully!', data);
+                    showMessage("Game data saved successfully to Supabase!");
+                }
+            } catch (e) {
+                console.error('Unexpected error:', e);
+                showMessage("An unexpected error occurred while saving.");
+            }
+        }
 
         function saveState() {
             try {
